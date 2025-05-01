@@ -7,19 +7,28 @@
 
 ./scripts/log.sh "restore wifi"
 ./scripts/restore-wifi-async.sh >>/tmp/crash.log 2>&1
-sleep 5s
+sleep 8s # give time to the kobo to reconnect (KOBO mini is okay with 5s, clara needs more)
 
 sleep $trmnl_loop_connected_grace_period
 
 batteryCapacity=$( cat /sys/class/power_supply/mc13892_bat/capacity )
 batteryStatus=$( cat /sys/class/power_supply/mc13892_bat/status )
-trmnl_low_voltage=3.11
-trmnl_high_voltage=4.08
-trmnl_fake_voltage=$(echo "scale=3; ($batteryCapacity / 100) * ($trmnl_high_voltage-$trmnl_low_voltage) + $trmnl_low_voltage" | bc)
 
-echo "Battery capacity: ${batteryCapacity} - Status: ${batteryStatus} - Voltage for API: $trmnl_fake_voltage" >>/tmp/crash.log 2>&1
+# 4.08 = 90% => 4.19 = 100 %
+# 3.12 = 10% => 3.00 = 0 %
 
-curl https://usetrmnl.com/api/display -H "ID: $trmnl_id" -H "Access-Token: $trmnl_token" -H "Battery-Voltage: $trmnl_fake_voltage" -o /tmp/trmnl.json
+trmnl_low_mv=3000
+trmnl_high_mv=4195
+
+range_mv=$((trmnl_high_mv - trmnl_low_mv))
+voltage_mv=$(( (batteryCapacity * range_mv / 100) + trmnl_low_mv ))
+
+# Convert back to voltage with decimal using string manipulation
+trmnl_fake_voltage="${voltage_mv:0:${#voltage_mv}-3}.${voltage_mv: -3}"
+
+./scripts/log.sh "Battery capacity: ${batteryCapacity}%- Status: ${batteryStatus} - Voltage for API: ${trmnl_fake_voltage}V"
+
+curl "${trmnl_apiurl}/display" -H "ID: $trmnl_id" -H "Access-Token: $trmnl_token" -H "Battery-Voltage: $trmnl_fake_voltage" -o /tmp/trmnl.json
 curl_status=$?
 
 ./scripts/log.sh "TRMNL api display returned $curl_status"

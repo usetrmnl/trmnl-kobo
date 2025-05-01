@@ -21,6 +21,15 @@ This repository structure is:
   - kobostuff: adds tools to your kobo < ref author >
   - rtcwake: patched busybox binary to allow to set up rtc wake up alarm on kobo < ref author / wayback machine>
 
+## Dependencies & Acknowledgements
+
+This project wouldn’t be possible without the incredible work of the open-source community. Here are the dependencies that make this project work:
+
+- [Nickel Menu](https://pgaskin.net/NickelMenu/) – NickelMenu adds custom menu items to various menus in Kobo's eReader software
+- [Niluje's Kobostuff](https://www.mobileread.com/forums/showthread.php?t=225030&highlight=kobostuff) – Packages targeting Kobo devices (eg: curl, jq, convert (image magic))
+- [patched rtcwake](https://web.archive.org/web/20160401013708/http://www.scherello.de/rtcwake_kobo.zip) + [discussion MobileRead](https://www.mobileread.com/forums/showthread.php?t=212145&page=5) – patched binary to have a working rtcwake on kobos
+- [KOReader](https://github.com/koreader/koreader) Source of inspiration / knowledge to make this work
+
 ## Prerequisites
 
 - Kobo device connected to wifi
@@ -38,4 +47,24 @@ Here are the steps to get the TRMNL app working on your Kobo
 - TRMNL app can be started using NickelMenu
 
 ## Digging into sources
-< TODO explain script loop and configuration >
+
+trmnl.sh is the starting scripts, it is heavily inspired from KOreader.
+It is started by a nickel menu entry, and starts by setting up the kobo environment to start the TRMNL fetch/display/sleep loop.
+
+The fetch/display/sleep if performed by trmnlloop.sh script called in a loop by trmnl.sh. It will 
+- enable battery charge led to inform activity
+  - ![led activity](./doc/img/ledsupport.png)
+- connect to wifi
+- read battery status (*/sys/class/power_supply/mc13892_bat/capacity*) and convert to % to Voltage (guestimate based on API)
+  - ![Battery support](./doc/img/batterysupport.png)
+- fetch image information via curl (and report battery status), 
+- parse information via jq (image url and refresh rate)
+- fetch the image
+- rotate it with convert (ImageMagic)
+- print it with fbink
+- disable wifi
+- disable charging led
+- sleep (suspend to memory) using rtcwake for the time request by the server
+  - a swipe on screen will wake the device up and force a refresh 
+
+

@@ -7,6 +7,9 @@ export trmnl_id="REPLACE WITH MAC ADDRESS"
 # Set your TRMNL API Key in Token
 export trmnl_token="REPLACE WITH API KEY"
 
+# Change if BYOS, no trailing slash
+export trmnl_apiurl="https://usetrmnl.com/api"
+
 # Do not log to screen if 0, otherwise log to screen too
 export debug_to_screen=1
 
