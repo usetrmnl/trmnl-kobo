@@ -5,7 +5,7 @@ This repository contains the implementation and a guide to make your kobo acts a
 
 " *TRMNL is an e-ink display that connects with popular products and renders their most useful information. We believe this black & white, focused, hands-off approach is the best way to stay informed without getting distracted [TRMNL website](https://usetrmnl.com/).* "
 
-< INSERT PICTURE HERE >
+![Capture](./doc/img/capture.jpg)
 
 ## Sumary
 This will add a menu entry to start TRMNL app to your kobo. 
@@ -36,15 +36,21 @@ This project wouldn’t be possible without the incredible work of the open-sour
 - If you want to benefit to the awesome TRMNL ecosystem you will need a TRMNL API key (physical device or [BYOD license](https://shop.usetrmnl.com/products/byod)), or point to your own TRMNL server [BYOS](https://docs.usetrmnl.com/go/diy/byos)
 
 ## Installation
-Here are the steps to get the TRMNL app working on your Kobo
-- Install NickelMenu < attribute to author > on your Kobo
-- Install Kobostuff  < attribute to author > on your Kobo
-- Copy TRMNL folder content to the Kobo in **.adds** folder (might be hidden < DOCUMENT >)
+Here are the steps to get the TRMNL app working on your Kobo (show hidden folder in your computer if you don't see folder starting with a dot)
+- Install NickelMenu on your Kobo 
+  - Connect your Kobo with Usb, copy **KoboRoot.tgz** to the folder name **.kobo** safely eject and restart.
+  - Available in this repo in /doc/distrib/nickelmenu
+- Install Kobostuff
+  - Connect your Kobo with Usb, copy **KoboRoot.tgz** to the folder name **.kobo** safely eject and restart.
+  - Available in this repo in the archive **/doc/distrib/kobostuff/kobo-stuff-1.6.N-r18901.tar.xz**
+- Copy TRMNL folder content to the Kobo in **.adds** folder
 - Edit **trmnl.sh** located in **.adds/TRMNL** to setup:
   - Device Id/Mac address in **trmnl_id** variable
   - Device token/API key in **trmnl_token** variable
 - Copy the file TRMNL.ini to **.adds/nm** folder (to create a menu entry) 
+  - (Located in src/nm/TRMNL.ini in this repo)
 - TRMNL app can be started using NickelMenu
+   - ![Menu](./doc/img/menu.png) 
 
 ## Digging into sources
 
