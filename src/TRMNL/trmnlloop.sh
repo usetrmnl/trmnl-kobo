@@ -28,7 +28,17 @@ trmnl_fake_voltage="${voltage_mv:0:${#voltage_mv}-3}.${voltage_mv: -3}"
 
 ./scripts/log.sh "Battery capacity: ${batteryCapacity}%- Status: ${batteryStatus} - Voltage for API: ${trmnl_fake_voltage}V"
 
-curl "${trmnl_apiurl}/display" -H "ID: $trmnl_id" -H "Access-Token: $trmnl_token" -H "Battery-Voltage: $trmnl_fake_voltage" -o /tmp/trmnl.json
+# get signal quality
+rssi=$(./scripts/getrssi.sh)
+rssi_status=$?
+
+
+curl "${trmnl_apiurl}/display" \
+    -H "ID: $trmnl_id" \
+    -H "Access-Token: $trmnl_token" \
+    -H "Battery-Voltage: $trmnl_fake_voltage" \
+    -H "RSSI: $rssi" \
+    -o /tmp/trmnl.json
 curl_status=$?
 
 ./scripts/log.sh "TRMNL api display returned $curl_status"
@@ -73,7 +83,7 @@ else
         if [ $? -eq 0 ]; then
             ./scripts/log.sh "rtcwake ok"
         else
-            ./scripts/log.sh "rtcwake failed"
+            ./scripts/log.sh "rtcwake failed, will try secondary suspend to memory next"
         fi
 
         # Calculate the elapsed time

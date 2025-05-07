@@ -51,7 +51,7 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - (Located in src/nm/TRMNL.ini in this repo)
 - TRMNL app can be started using NickelMenu
    - ![Menu](./doc/img/menu.png) 
-
+- To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
 ## Digging into sources
 
 trmnl.sh is the starting scripts, it is heavily inspired from KOreader.
@@ -70,7 +70,8 @@ The fetch/display/sleep if performed by trmnlloop.sh script called in a loop by 
 - print it with fbink
 - disable wifi
 - disable charging led
-- sleep (suspend to memory) using rtcwake for the time request by the server
+- plan next wake up alarm using rtcwake for the time request by the server
+- sleep (suspend to memory) using rtcwake or suspend to memory if rtcwake can't do it
   - a swipe on screen will wake the device up and force a refresh 
 
 
