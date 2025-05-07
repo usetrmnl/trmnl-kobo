@@ -43,7 +43,7 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
 - Install Kobostuff
   - Connect your Kobo with Usb, copy **KoboRoot.tgz** to the folder name **.kobo** safely eject and restart.
   - Available in this repo in the archive **/doc/distrib/kobostuff/kobo-stuff-1.6.N-r18901.tar.xz**
-- Copy TRMNL folder content to the Kobo in **.adds** folder
+- Copy TRMNL folder to the Kobo in **.adds** folder (to get **.adds/TRMNL/**)
 - Edit **trmnl.sh** located in **.adds/TRMNL** to setup:
   - Device Id/Mac address in **trmnl_id** variable
   - Device token/API key in **trmnl_token** variable
