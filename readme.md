@@ -11,7 +11,7 @@ This repository contains the implementation and a guide to make your kobo acts a
 - Kobo Mini (x2)
 - Kobo Clara HD (x2)
 - Kobo Aura Second Edition - (Device without activity Led)
-  - ![Capture](./doc/img/koboaurasecondedition.png)
+  - ![Capture](./doc/img/Koboaurasecondedition.png)
 
 ## Sumary
 This will add a menu entry to start TRMNL app to your kobo. 
