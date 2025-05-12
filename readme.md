@@ -7,6 +7,12 @@ This repository contains the implementation and a guide to make your kobo acts a
 
 ![Capture](./doc/img/capture.jpg)
 
+### Reported working on
+- Kobo Mini (x2)
+- Kobo Clara HD (x2)
+- Kobo Aura Second Edition - (Device without activity Led)
+  - ![Capture](./doc/img/koboaurasecondedition.png)
+
 ## Sumary
 This will add a menu entry to start TRMNL app to your kobo. 
 - The TRMNL app will periodically request a dashboard screen to be displayed on the Kobo screen.
@@ -44,14 +50,37 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - Connect your Kobo with Usb, copy **KoboRoot.tgz** to the folder name **.kobo** safely eject and restart.
   - Available in this repo in the archive **/doc/distrib/kobostuff/kobo-stuff-1.6.N-r18901.tar.xz**
 - Copy TRMNL folder to the Kobo in **.adds** folder (to get **.adds/TRMNL/**)
-- Edit **trmnl.sh** located in **.adds/TRMNL** to setup:
-  - Device Id/Mac address in **trmnl_id** variable
-  - Device token/API key in **trmnl_token** variable
+- Edit **config.json** located in **.adds/TRMNL** to setup:
+  - **TrmnlId**: Device Id/Mac address
+  - **TrmnlToken**: Device token/API key
+  - **TrmnlApiUrl**: Change this if your Bringing Your Own Server (BYOS)
+  - **LoopMaxIteration**: Set to 0 to run indifinitely (for initial setup/troubeleshooting, pick a small number, so that the KOBO automatically restart)
+  - **ConnectedGracePeriod**: If your KOBO regularly shows connection issue, increase this (delay in seconds after requesting to connect to the wifi, to request a TRMNL display information and image).
+  - Default is:
+```
+{
+    "TrmnlId": "your TRMNL Mac Address",
+    "TrmnlToken": "your TRMNL API Key",
+    "TrmnlApiUrl": "https://usetrmnl.com/api",
+    "DebugToScreen": 0,
+    "LoopMaxIteration": 0,
+    "ConnectedGracePeriod": 0
+}
+````
+
 - Copy the file TRMNL.ini to **.adds/nm** folder (to create a menu entry) 
   - (Located in src/nm/TRMNL.ini in this repo)
 - TRMNL app can be started using NickelMenu
    - ![Menu](./doc/img/menu.png) 
 - To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
+
+
+## FAQ
+- How to get out of TRMNL loop ?
+    - To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
+- Why do sometimes I see a connection issue when KOBO's waking up ?
+  - If your wifi connection is bad, it may takes more time than the alloted delay to connect to the Wifi, if this is the case, it can be fixed using ```ConnectedGracePeriod``` setting in config.json to increase the time to connect to the wifi.
+
 ## Digging into sources
 
 trmnl.sh is the starting scripts, it is heavily inspired from KOreader.
@@ -73,5 +102,3 @@ The fetch/display/sleep if performed by trmnlloop.sh script called in a loop by 
 - plan next wake up alarm using rtcwake for the time request by the server
 - sleep (suspend to memory) using rtcwake or suspend to memory if rtcwake can't do it
   - a swipe on screen will wake the device up and force a refresh 
-
-

@@ -2,22 +2,25 @@
 export LC_ALL="en_US.UTF-8"
 
 # Set your TRMNL Mac Address in Id:
-export trmnl_id="REPLACE WITH MAC ADDRESS"
+export trmnl_id="$(jq -r '.TrmnlId' config.json)"
 
 # Set your TRMNL API Key in Token
-export trmnl_token="REPLACE WITH API KEY"
+export trmnl_token="$(jq -r '.TrmnlToken' config.json)"
 
 # Change if BYOS, no trailing slash
-export trmnl_apiurl="https://usetrmnl.com/api"
+export trmnl_apiurl="$(jq -r '.TrmnlApiUrl' config.json)"
 
 # Do not log to screen if 0, otherwise log to screen too
-export debug_to_screen=1
+export debug_to_screen=$(jq -r '.DebugToScreen' config.json)
 
 # Set a maximum iteration, if 0, do not stop
-export trmnl_loop_iteration_stop=4
+export trmnl_loop_iteration_stop=$(jq -r '.LoopMaxIteration' config.json)
 
 # If 0, do not wait once connected to wifi, otherwise wait X sec to let user connect to SSH and troubleshoot
-export trmnl_loop_connected_grace_period=0
+export trmnl_loop_connected_grace_period=$(jq -r '.ConnectedGracePeriod' config.json)
+
+# Must me Major.Minor.Revision format
+export trmnl_firmware_version=$(cat version.txt)
 
 # Compute our working directory in an extremely defensive manner
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)"
@@ -240,7 +243,7 @@ fi
 # We'll want to ensure Portrait rotation to allow us to use faster blitting codepaths @ 8bpp,
 # so remember the current one before fbdepth does its thing.
 IFS= read -r ORIG_FB_ROTA <"/sys/class/graphics/fb0/rotate"
-echo "Original fb rotation is set @ ${ORIG_FB_ROTA}" >>crash.log 2>&1
+echo "Original fb rotation is set @ ${ORIG_FB_ROTA}" >>/tmp/debug.log 2>&1
 
 # In the same vein, swap to 8bpp,
 # because 16bpp is the worst idea in the history of time, as RGB565 is generally a PITA without hardware blitting,
@@ -251,7 +254,7 @@ echo "Original fb rotation is set @ ${ORIG_FB_ROTA}" >>crash.log 2>&1
 #       as they fail to flip the grayscale flag properly. Plus, we get to play nice with every launch method that way.
 #       So, remember the current bitdepth, so we can restore it on exit.
 IFS= read -r ORIG_FB_BPP <"/sys/class/graphics/fb0/bits_per_pixel"
-echo "Original fb bitdepth is set @ ${ORIG_FB_BPP}bpp" >>crash.log 2>&1
+echo "Original fb bitdepth is set @ ${ORIG_FB_BPP}bpp" >>/tmp/debug.log 2>&1
 # Sanity check...
 case "${ORIG_FB_BPP}" in
 8) ;;
@@ -269,8 +272,8 @@ ko_do_fbdepth() {
     if [ "${PLATFORM}" = "b300-ntx" ]; then
         # NOTE: The fb state is *completely* meaningless on this platform.
         #       This is effectively a noop, we're just keeping it for logging purposes...
-        echo "Making sure that rotation is set to Portrait" >>crash.log 2>&1
-        fbdepth -R UR >>crash.log 2>&1
+        echo "Making sure that rotation is set to Portrait" >>/tmp/debug.log 2>&1
+        fbdepth -R UR >>/tmp/debug.log 2>&1
         # We haven't actually done anything, so don't do anything on exit either ;).
         unset ORIG_FB_BPP
 
@@ -283,11 +286,11 @@ ko_do_fbdepth() {
     if [ "${hasColorPanel}" = "1" ]; then
         # If color rendering has been disabled by the user, switch to 8bpp to completely skip CFA processing
         if grep -q '\["color_rendering"\] = false' 'settings.reader.lua' 2>/dev/null; then
-            echo "Switching fb bitdepth to 8bpp (to disable CFA) & rotation to Portrait" >>crash.log 2>&1
-            fbdepth -d 8 -R UR >>crash.log 2>&1
+            echo "Switching fb bitdepth to 8bpp (to disable CFA) & rotation to Portrait" >>/tmp/debug.log 2>&1
+            fbdepth -d 8 -R UR >>/tmp/debug.log 2>&1
         else
-            echo "Switching fb bitdepth to 32bpp & rotation to Portrait" >>crash.log 2>&1
-            fbdepth -d 32 -R UR >>crash.log 2>&1
+            echo "Switching fb bitdepth to 32bpp & rotation to Portrait" >>/tmp/debug.log 2>&1
+            fbdepth -d 32 -R UR >>/tmp/debug.log 2>&1
         fi
 
         return
@@ -300,18 +303,18 @@ ko_do_fbdepth() {
             # Unless we're a Forma/Libra, don't even bother to swap rotation if the fb is @ 16bpp, because RGB565 is terrible anyways,
             # so there's no faster codepath to achieve, and running in Portrait @ 16bpp might actually be broken on some setups...
             if [ "${ORIG_FB_BPP}" -eq "16" ] && [ "${PRODUCT}" != "frost" ] && [ "${PRODUCT}" != "storm" ]; then
-                echo "Making sure we're using the original fb bitdepth @ ${ORIG_FB_BPP}bpp & rotation @ ${ORIG_FB_ROTA}" >>crash.log 2>&1
-                fbdepth -d "${ORIG_FB_BPP}" -r "${ORIG_FB_ROTA}" >>crash.log 2>&1
+                echo "Making sure we're using the original fb bitdepth @ ${ORIG_FB_BPP}bpp & rotation @ ${ORIG_FB_ROTA}" >>/tmp/debug.log 2>&1
+                fbdepth -d "${ORIG_FB_BPP}" -r "${ORIG_FB_ROTA}" >>/tmp/debug.log 2>&1
             else
-                echo "Making sure we're using the original fb bitdepth @ ${ORIG_FB_BPP}bpp, and that rotation is set to Portrait" >>crash.log 2>&1
-                fbdepth -d "${ORIG_FB_BPP}" -R UR >>crash.log 2>&1
+                echo "Making sure we're using the original fb bitdepth @ ${ORIG_FB_BPP}bpp, and that rotation is set to Portrait" >>/tmp/debug.log 2>&1
+                fbdepth -d "${ORIG_FB_BPP}" -R UR >>/tmp/debug.log 2>&1
             fi
         fi
     else
         # Swap to 8bpp if things looke sane
         if [ -n "${ORIG_FB_BPP}" ]; then
-            echo "Switching fb bitdepth to 8bpp & rotation to Portrait" >>crash.log 2>&1
-            fbdepth -d 8 -R UR >>crash.log 2>&1
+            echo "Switching fb bitdepth to 8bpp & rotation to Portrait" >>/tmp/debug.log 2>&1
+            fbdepth -d 8 -R UR >>/tmp/debug.log 2>&1
         fi
     fi
 }
@@ -342,7 +345,7 @@ hwclock -w -u
 while true; do
     count=$((count + 1))
     ./scripts/log.sh "$(date +%T) >> Loop ${count}"
-    echo  >>crash.log 2>&1
+    echo  >>/tmp/debug.log 2>&1
 
     # logging everything block the suspend
     ./trmnlloop.sh
@@ -355,11 +358,11 @@ done
 # Wipe the clones on exit
 rm -f "/tmp/trmnl.sh"
 # we keep at most 500KB worth of crash log
-if [ -e crash.log ]; then
-    tail -c 500000 crash.log >crash.log.new
-    mv -f crash.log.new crash.log
+if [ -e /tmp/debug.log ]; then
+    tail -c 500000 /tmp/debug.log >/tmp/debug.log.new
+    mv -f /tmp/debug.log.new /tmp/debug.log
 fi
-cp /tmp/crash.log crash.log
+cp /tmp/debug.log debug.log
 
 reboot
 exit 0

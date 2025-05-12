@@ -1,12 +1,12 @@
 #!/bin/sh
 
-./scripts/ledToggle.sh 8 >>/tmp/crash.log 2>&1
+./scripts/ledToggle.sh 8 >>/tmp/debug.log 2>&1
 
 ./scripts/log.sh "enable wifi"
-./scripts/enable-wifi.sh >>/tmp/crash.log 2>&1
+./scripts/enable-wifi.sh >>/tmp/debug.log 2>&1
 
 ./scripts/log.sh "restore wifi"
-./scripts/restore-wifi-async.sh >>/tmp/crash.log 2>&1
+./scripts/restore-wifi-async.sh >>/tmp/debug.log 2>&1
 sleep 8s # give time to the kobo to reconnect (KOBO mini is okay with 5s, clara needs more)
 
 sleep $trmnl_loop_connected_grace_period
@@ -38,37 +38,43 @@ curl "${trmnl_apiurl}/display" \
     -H "Access-Token: $trmnl_token" \
     -H "Battery-Voltage: $trmnl_fake_voltage" \
     -H "RSSI: $rssi" \
-    -o /tmp/trmnl.json
+    -H "FW-Version: ${trmnl_firmware_version}" \
+    -o /tmp/trmnl.json >>/tmp/debug.log 2>&1
 curl_status=$?
 
-./scripts/log.sh "TRMNL api display returned $curl_status"
+json_content=$(cat /tmp/trmnl.json)
+./scripts/log.sh "TRMNL api display returned $curl_status with ${json_content}"
 if [ $curl_status -ne 0 ]; then
-    fbink -g file=noserver.png,valign=CENTER,halign=CENTER,h=-2,w=0 > /dev/null 2>&1
-    fbink -x 1 -y 5 "Retrieve TRMNL Display info failed"  > /dev/null 2>&1
+    fbdepth -r 0
+    fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 > /dev/null 2>&1
+    fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
+    fbdepth -r -1
     sleep 15s
 else
-    curl -o /tmp/trmnl.bmp "$(jq -r '.image_url' /tmp/trmnl.json)"
+    image_url=$(jq -r '.image_url' /tmp/trmnl.json)
+    curl -o /tmp/trmnl.bmp "${image_url}" >>/tmp/debug.log 2>&1
     curl_status=$?
+    ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
     if [ $curl_status -ne 0 ]; then
-        ./scripts/log.sh "TRMNL fetch image returned $curl_status"
-        fbink -g file=noserver.png,valign=CENTER,halign=CENTER,h=-2,w=0 > /dev/null 2>&1
-        fbink -x 1 -y 5 "Retrieve TRMNL S3 bitmap failed"  > /dev/null 2>&1
+        fbdepth -r 0
+        fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 > /dev/null 2>&1
+        fbink -q -m -y -5 "Retrieve TRMNL S3 bitmap failed ($curl_status)"  > /dev/null 2>&1
+        fbdepth -r -1
         sleep 15s
     else
         #with fbdepth -r 0 convert not needed
         convert /tmp/trmnl.bmp -rotate 90 /tmp/trmnl_r.bmp
         fbink -g file=/tmp/trmnl_r.bmp,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f
-        sleep 10s
 
         ./scripts/log.sh "disabling wifi"
-        ./scripts/disable-wifi.sh >>/tmp/crash.log 2>&1
+        ./scripts/disable-wifi.sh >>/tmp/debug.log 2>&1
 
         refresh_rate=$(jq -r '.refresh_rate' /tmp/trmnl.json)
         ./scripts/log.sh "Should sleep for ${refresh_rate}"
         sleep 5s
 
         ./scripts/log.sh "Enable suspend state"
-        echo 1 >/sys/power/state-extended >>/tmp/crash.log 2>&1
+        echo 1 >/sys/power/state-extended >>/tmp/debug.log 2>&1
         if [ $? -eq 0 ]; then
             ./scripts/log.sh "Enabled suspend state ok"
         else
@@ -79,7 +85,7 @@ else
 
         # Record the start time
         start_time=$(date +%s)
-        ./bin/busybox_kobo rtcwake -a -s $refresh_rate -m mem >>/tmp/crash.log 2>&1
+        ./bin/busybox_kobo rtcwake -a -s $refresh_rate -m mem >>/tmp/debug.log 2>&1
         if [ $? -eq 0 ]; then
             ./scripts/log.sh "rtcwake ok"
         else
@@ -94,7 +100,7 @@ else
             ./scripts/log.sh "rtcwake took more than 10 seconds, skipping suspend to mem in power state"
         else
             ./scripts/log.sh  "rtcwake took ${elapsed_time_in_rtcwake}, writing suspend to mem in power state"
-            ./scripts/ledToggle.sh 0  >>/tmp/crash.log 2>&1
+            ./scripts/ledToggle.sh 0  >>/tmp/debug.log 2>&1
             sleep 1s
             sync
             sleep 2s
@@ -106,7 +112,7 @@ else
             fi
 
             ./scripts/log.sh "Disable suspend state"
-            echo 0 >/sys/power/state-extended >>/tmp/crash.log 2>&1
+            echo 0 >/sys/power/state-extended >>/tmp/debug.log 2>&1
             if [ $? -eq 0 ]; then
                 ./scripts/log.sh "Disabled suspend state ok"
             else

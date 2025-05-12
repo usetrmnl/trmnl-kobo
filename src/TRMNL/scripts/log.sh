@@ -48,4 +48,4 @@ if [ $debug_to_screen -ne 0 ]; then
     fbink -x 1 -y $value_to_save -S 2 "$1" > /dev/null 2>&1
 fi
 
-echo "$1" >>/tmp/crash.log 2>&1
+echo "$1" >>/tmp/debug.log 2>&1
