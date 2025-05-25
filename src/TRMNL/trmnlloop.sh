@@ -46,7 +46,7 @@ json_content=$(cat /tmp/trmnl.json)
 ./scripts/log.sh "TRMNL api display returned $curl_status with ${json_content}"
 if [ $curl_status -ne 0 ]; then
     fbdepth -r 0
-    fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 > /dev/null 2>&1
+    fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
     fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
     fbdepth -r -1
     sleep 15s
@@ -57,7 +57,7 @@ else
     ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
     if [ $curl_status -ne 0 ]; then
         fbdepth -r 0
-        fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 > /dev/null 2>&1
+        fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
         fbink -q -m -y -5 "Retrieve TRMNL S3 bitmap failed ($curl_status)"  > /dev/null 2>&1
         fbdepth -r -1
         sleep 15s
