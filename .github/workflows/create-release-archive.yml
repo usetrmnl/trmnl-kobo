@@ -32,10 +32,14 @@ jobs:
       # Add more lines for more files/folders.
       - name: Create archive
         run: |
-          zip -r trmnl-kobo-${{ env.VERSION }}.zip \
-          src/TRMNL \
-          assets/ \
-          README.md
+          mkdir -p staging
+          cp -r src/TRMNL staging
+          cp -r assets/ staging
+          cp README.md staging
+
+          pushd staging
+          zip -r ../trmnl-kobo-${{ env.VERSION }}.zip .
+          popd
 
       # Step 5: Create a GitHub Release and upload the archive as an asset
       - name: Create Release
