@@ -1,0 +1,49 @@
+name: Create Release Archive
+
+# This action runs when you push a new tag that starts with 'v' (e.g., v1.0, v2.3.4)
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest # Use the latest version of Ubuntu as the runner
+
+    steps:
+      # Step 1: Check out your repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Get the version from the Git tag (e.g., extracts "1.2.0" from "v1.2.0")
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      # Step 3: Update version.txt with the new version number
+      - name: Update version.txt
+        run: |
+          echo "Updating version.txt to ${{ env.VERSION }}"
+          echo "${{ env.VERSION }}" > ./src/TRMNL/version.txt
+
+      # Step 4: Create the archive
+      # Customize the files and folders to include in your archive.
+      # Add more lines for more files/folders.
+      - name: Create archive
+        run: |
+          zip -r trmnl-kobo-${{ env.VERSION }}.zip \
+          src/TRMNL \
+          assets/ \
+          README.md
+
+      # Step 5: Create a GitHub Release and upload the archive as an asset
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # The name of the release will be the tag name (e.g., "v1.2.0")
+          name: Release ${{ github.ref_name }}
+          # The body of the release can be auto-generated from your commit history
+          generate_release_notes: true
+          # Find and upload the archive we just created
+          files: trmnl-kobo-*.zip
