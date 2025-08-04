@@ -34,7 +34,10 @@ jobs:
         run: |
           mkdir -p staging
           cp -r src/TRMNL staging
-          cp -r assets/ staging
+
+          mkdir -p staging/doc
+          mkdir -p staging/doc/img
+          cp -r doc/img staging/doc/img
           cp README.md staging
 
           pushd staging
