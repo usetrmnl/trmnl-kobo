@@ -38,7 +38,7 @@ jobs:
           mkdir -p staging/doc
           mkdir -p staging/doc/img
           cp -r doc/img staging/doc/img
-          cp README.md staging
+          cp readme.md staging
 
           pushd staging
           zip -r ../trmnl-kobo-${{ env.VERSION }}.zip .
