@@ -22,6 +22,13 @@ export trmnl_loop_connected_grace_period=$(jq -r '.ConnectedGracePeriod' config.
 # Must me Major.Minor.Revision format
 export trmnl_firmware_version=$(cat version.txt)
 
+# Read screen orientation, normal, or reversed
+#export trmnl_screen_orientation=$(jq -r '.ScreenOrientation' config.json)
+
+# bmp expected (TRMNL_OG), or png (no rotation needed)
+export trmnl_image_format=$(jq -r '.ImageFormat' config.json)
+echo "Image format to use: $trmnl_image_format"
+
 # Compute our working directory in an extremely defensive manner
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)"
 # NOTE: We need to remember the *actual* TRMNL_DIR, not the relocalized version in /tmp...

@@ -1,0 +1,135 @@
+This project makes use of a number of third-party libraries, which we'll acknowledge here:
+
+	* font8x8 (8x8 monochrome bitmap fonts for rendering), by Daniel Hepper <daniel@hepper.net>,
+		Released into the public domain.
+		(https://github.com/dhepper/font8x8)
+
+	* cutef8/utf8.* (Basic UTF-8 manipulation routines), by Jeff Bezanson,
+		Released into the public domain.
+		(https://www.cprogramming.com/tutorial/unicode.html)
+		(https://github.com/JeffBezanson/cutef8)
+		(https://github.com/JuliaLang/julia/blob/master/src/support/utf8.c)
+		NOTE: Actually, let's say under the MIT License instead (https://opensource.org/licenses/MIT),
+		      as that's what the bits maintained in Julia fall under ;).
+
+	* cutef8/dfa.* (Flexible and Economical UTF-8 Decoder), by Bjoern Hoehrmann <bjoern@hoehrmann.de>,
+		Licensed under the ISC License (https://opensource.org/licenses/ISC).
+		(http://bjoern.hoehrmann.de/utf-8/decoder/dfa)
+
+	* stb_image (Image loader) and stb_truetype (font renderer), by Sean Barrett,
+		Released into the public domain.
+		(http://nothings.org/stb)
+
+	* libunibreak (Unicode line breaking implementation) by Wu Yongwei, et al
+		Licensed under the Zlib license (https://opensource.org/licenses/Zlib).
+		(https://github.com/adah1972/libunibreak)
+
+	* libi2c (SMBus level access helper functions),
+		Copyright (C) 1995-1997  Simon G. Vogl,
+		Copyright (C) 1998-1999  Frodo Looijaard <frodol@dds.nl>,
+		Copyright (C) 2012-2013  Jean Delvare <jdelvare@suse.de>,
+		Licensed under the GNU Library or Lesser General Public License (LGPL 2.1+) (https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html).
+		(https://git.kernel.org/pub/scm/utils/i2c-tools/i2c-tools.git)
+
+	* libevdev (Wrapper library for evdev devices),
+		Copyright © 2013 Red Hat, Inc.,
+		Copyright © 2013 David Herrmann <dh.herrmann@gmail.com>,
+		Released under the MIT license (https://opensource.org/licenses/mit-license.php)
+		(https://gitlab.freedesktop.org/libevdev/libevdev)
+
+It also bundles a few specific routines based on others' work:
+
+	* Some (the 8/16/24/32bpp put_pixel_* variants) Linux framebuffer writing routines based on: fbtestfnt.c & fbtest6.c, from
+		https://raspberrycompote.blogspot.com/2014/04/low-level-graphics-on-raspberry-pi-text.html &
+		https://raspberrycompote.blogspot.com/2013/03/low-level-graphics-on-raspberry-pi-part_8.html
+		Original works by J-P Rosti (a.k.a -rst- and 'Raspberry Compote'),
+		Licensed under the Creative Commons Attribution 3.0 Unported License
+		(http://creativecommons.org/licenses/by/3.0/deed.en_US)
+
+	* Ordered dithering routine (dither_o8x8) completely based on ImageMagick's implementation,
+		(OrderedDitherImage @ https://github.com/ImageMagick/ImageMagick/blob/master/MagickCore/threshold.c),
+		Copyright 1999-2019 ImageMagick Studio LLC,
+		Licensed under the ImageMagick License,
+		(https://imagemagick.org/script/license.php)
+
+	* The image scaling routine (qimagescale/*) is Qt5's qSmoothScaleImage implementation, ripped out of Qt and ported back to C,
+		(https://github.com/qt/qtbase/blob/dev/src/gui/painting/qimagescale.cpp),
+		Copyright (C) 2016 The Qt Company Ltd,
+		Licensed under the GNU Lesser General Public License version 3 (http://www.gnu.org/licenses/lgpl.html),
+		An implementation originally (C) Daniel M. Duley, that is itself based on imlib2,
+		Copyright (C) Carsten Haitzler and various contributors.
+		Licensed under the New BSD License (http://www.opensource.org/licenses/bsd-license.php),
+		(https://git.enlightenment.org/legacy/imlib2.git/tree/src/lib/scale.c).
+
+	* When in doubt, check the source code, it's heavily commented, and sources are always referenced.
+
+As well as a number of third-party resources (namely, font files):
+
+	* unscii (Bitmapped Unicode fonts), by Viznut,
+		Released into the public domain.
+		(http://pelulamu.net/unscii)
+
+	* leggie (a legible, pretty bitmap font), Copyright © 2012-2018 Wiktor Kerr,
+		Licensed under a Creative Commons Attribution 4.0 International License (CC BY) (https://creativecommons.org/licenses/by/4.0/).
+		(https://memleek.org/leggie)
+
+	* kates & fkp (bitmap fonts from the artwiz package),
+		Licensed under the GNU General Public License version 2+ (https://www.gnu.org/licenses/gpl-2.0.html).
+		(https://www.gilesorr.com/bashprompt/xfonts)
+		(http://artwizaleczapka.sourceforge.net)
+		(http://artwiz-latin1.sourceforge.net)
+
+	* ctrld (a fixed-width bitmap font forked from Dina),
+		Licensed under the MIT License (https://opensource.org/licenses/MIT).
+		(https://github.com/bjin/ctrld-font)
+		(http://www.dcmembers.com/jibsen/download/61/)
+
+	* orp (a small bitmap pixel-perfect font), by Micah Elliott,
+		Released into the public domain.
+		(https://github.com/MicahElliott/Orp-Font)
+
+	* scientifica (a tall, condensed, bitmap font for geeks), Copyright (c) 2018 Akshay Oppiliappan <nerdypepper@tuta.io>,
+		Licensed under the SIL Open Font License, Version 1.1 (https://opensource.org/licenses/OFL-1.1).
+		(https://github.com/NerdyPepper/scientifica)
+
+	* terminus (a clean, fixed width bitmap font), Copyright (c) 2019 Dimitar Toshkov Zhekov,
+		Licensed under the SIL Open Font License, Version 1.1 (https://opensource.org/licenses/OFL-1.1).
+		(http://terminus-font.sourceforge.net/)
+		Applied variants: td1, br1, ll2, gq2, ao2
+
+	* fatty (a 7x16 pixel, fixed width bitmap font), by Tomi Ollila,
+		Licensed under the GNU General Public License version 2+ (https://www.gnu.org/licenses/gpl-2.0.html).
+		(https://github.com/domo141/fatty-bitmap-font)
+
+	* spleen (a monospaced bitmap font), Copyright (c) 2018-2019, Frederic Cambus,
+		Licensed under the 2-Clause BSD License (https://opensource.org/licenses/BSD-2-Clause).
+		(https://github.com/fcambus/spleen)
+
+	* tewi (a small bitmap font), Copyright (c) 2015-2017 lucy <lucy at luz dot lu>,
+		Licensed under the MIT License (https://opensource.org/licenses/MIT).
+		(https://github.com/lucy/tewi-font)
+
+	* TopazPlus (an Amiga font), (c) dMG/t!s^dS!,
+		Licensed under the GNU General Public License, Font Exception (http://www.gnu.org/licenses/gpl-faq.html#FontException).
+		Based on Topaz, (c) AmigaInc.
+		(https://www.trueschool.se/html/fonts.html)
+
+	* MicroKnightPlus (an Amiga font), (c) dMG/t!s^dS!,
+		Licensed under the GNU General Public License, Font Exception (http://www.gnu.org/licenses/gpl-faq.html#FontException).
+		Based on MicroKnight, (c) Unknown author.
+		(https://www.trueschool.se/html/fonts.html)
+
+	* vga, (IBM VGA 8x16 font), BDF conversion (c) 2016 farsil,
+		Licensed under the Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) (https://creativecommons.org/licenses/by-sa/4.0/).
+		(https://farsil.github.io/ibmfonts)
+		Based on glyphs from PxPlus IBM VGA8, by VileR,
+		Licensed under the Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) (https://creativecommons.org/licenses/by-sa/4.0/).
+		(https://int10h.org/oldschool-pc-fonts)
+
+	* unifont, tools/unibdf2hex (GNU Unifont glyphs), Copyright (C) 1998-2020 Roman Czyborra, Paul Hardy,  Qianqian Fang, Andrew Miller, Johnnie Weaver, David Corbett, et al.,
+		Licensed under the GNU General Public License version 2+, with the GNU Font Embedding Exception (http://unifoundry.com/LICENSE.txt)
+		(http://unifoundry.com/unifont/index.html)
+
+	* cozette, (A bitmap programming font optimized for coziness), Copyright (c) 2020 Slavfox,
+		Licensed under the MIT License (https://opensource.org/licenses/MIT).
+		(https://github.com/slavfox/Cozette)

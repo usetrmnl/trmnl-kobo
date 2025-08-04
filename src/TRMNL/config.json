@@ -4,5 +4,6 @@
     "TrmnlApiUrl": "https://usetrmnl.com/api",
     "DebugToScreen": 0,
     "LoopMaxIteration": 0,
-    "ConnectedGracePeriod": 0
+    "ConnectedGracePeriod": 0,
+    "ImageFormat": "png" 
 }

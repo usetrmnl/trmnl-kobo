@@ -9,9 +9,16 @@ This repository contains the implementation and a guide to make your kobo acts a
 
 ### Reported working on
 - Kobo Mini (x2)
-- Kobo Clara HD (x2)
+- Kobo Clara HD (x3)
+- Kobo Clara 2E 
 - Kobo Aura Second Edition - (Device without activity Led)
   - ![Capture](./doc/img/Koboaurasecondedition.png)
+- Kobo Libra 2
+  - ![Capture](./doc/img/libra2.jpg)
+- Kobo Libra 2 Color 
+  - ![Capture](./doc/img/libracolor.jpg)
+
+  
 
 ## Sumary
 This will add a menu entry to start TRMNL app to your kobo. 
@@ -56,6 +63,9 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - **TrmnlApiUrl**: Change this if your Bringing Your Own Server (BYOS)
   - **LoopMaxIteration**: Set to 0 to run indifinitely (for initial setup/troubeleshooting, pick a small number, so that the KOBO automatically restart)
   - **ConnectedGracePeriod**: If your KOBO regularly shows connection issue, increase this (delay in seconds after requesting to connect to the wifi, to request a TRMNL display information and image).
+  - **ImageFormat**: bmp to behave like TRMNL OG, png, if you configured your device to something else (Kobo Libra, Kindle PW 7th gen for Clara HD).
+    - Note: DPI might be too big, below Kindle PW 7th gen for Clara HD: 
+    - ![Capture](./doc/img/nottrmnlogsupport.png)
   - Default is:
 ```
 {
@@ -64,7 +74,8 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
     "TrmnlApiUrl": "https://usetrmnl.com/api",
     "DebugToScreen": 0,
     "LoopMaxIteration": 0,
-    "ConnectedGracePeriod": 0
+    "ConnectedGracePeriod": 0,
+    "ImageFormat": "bmp" 
 }
 ````
 
@@ -95,7 +106,7 @@ The fetch/display/sleep if performed by trmnlloop.sh script called in a loop by 
 - fetch image information via curl (and report battery status), 
 - parse information via jq (image url and refresh rate)
 - fetch the image
-- rotate it with convert (ImageMagic)
+- rotate the display with fbdepth (if needed, using PNG mode and high DPI, TRMNL api is already inverted)
 - print it with fbink
 - disable wifi
 - disable charging led

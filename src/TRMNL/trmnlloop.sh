@@ -11,6 +11,23 @@ sleep 8s # give time to the kobo to reconnect (KOBO mini is okay with 5s, clara 
 
 sleep $trmnl_loop_connected_grace_period
 
+
+# Check if the battery directory exists
+if [ -d /sys/class/power_supply/mc13892_bat ]; then
+  # Set variables from the second possible path
+  batteryCapacity=$(cat /sys/class/power_supply/mc13892_bat/capacity)
+  batteryStatus=$(cat /sys/class/power_supply/mc13892_bat/status)
+elif [ -d /sys/class/power_supply/battery ]; then
+  # Set variables from the first possible path
+  batteryCapacity=$(cat /sys/class/power_supply/battery/capacity)
+  batteryStatus=$(cat /sys/class/power_supply/battery/status)
+else
+  # Handle the case where neither directory is found
+  batteryCapacity=50
+  batteryStatus="N/A"
+  echo "Error: Could not find battery information." >&2
+fi
+
 batteryCapacity=$( cat /sys/class/power_supply/mc13892_bat/capacity )
 batteryStatus=$( cat /sys/class/power_supply/mc13892_bat/status )
 
@@ -45,26 +62,31 @@ curl_status=$?
 json_content=$(cat /tmp/trmnl.json)
 ./scripts/log.sh "TRMNL api display returned $curl_status with ${json_content}"
 if [ $curl_status -ne 0 ]; then
-    fbdepth -r 0
-    fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
-    fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
-    fbdepth -r -1
+    ./bin/fbink/fbdepth -r 0
+    ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
+    ./bin/fbink/fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
+    ./bin/fbink/fbdepth -r -1
     sleep 15s
 else
     image_url=$(jq -r '.image_url' /tmp/trmnl.json)
-    curl -o /tmp/trmnl.bmp "${image_url}" >>/tmp/debug.log 2>&1
+    curl -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
     curl_status=$?
     ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
     if [ $curl_status -ne 0 ]; then
-        fbdepth -r 0
-        fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
-        fbink -q -m -y -5 "Retrieve TRMNL S3 bitmap failed ($curl_status)"  > /dev/null 2>&1
-        fbdepth -r -1
+        ./bin/fbink/fbdepth -r 0
+        ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
+        ./bin/fbink/fbink -q -m -y -5 "Retrieve TRMNL S3 $trmnl_image_format failed ($curl_status)"  > /dev/null 2>&1
+        ./bin/fbink/fbdepth -r -1
         sleep 15s
     else
-        #with fbdepth -r 0 convert not needed
-        convert /tmp/trmnl.bmp -rotate 90 /tmp/trmnl_r.bmp
-        fbink -g file=/tmp/trmnl_r.bmp,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f
+        # With png image is already in portrait, no need to rotate, with bmp/legacy, rotation is needed, it here that we should support reverse orientation
+        if [ "$trmnl_image_format" = "bmp" ]; then
+            ./bin/fbink/fbdepth -r 0
+        fi
+        ./bin/fbink/fbink -g file=/tmp/trmnl.$trmnl_image_format,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f
+
+        # rotate back to portrait mode
+        ./bin/fbink/fbdepth -r -1
 
         ./scripts/log.sh "disabling wifi"
         ./scripts/disable-wifi.sh >>/tmp/debug.log 2>&1
