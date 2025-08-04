@@ -33,7 +33,7 @@ jobs:
       - name: Create archive
         run: |
           mkdir -p staging
-          cp -r src/TRMNL staging
+          cp -r src staging
 
           mkdir -p staging/doc
           mkdir -p staging/doc/img
