@@ -28,9 +28,6 @@ else
   echo "Error: Could not find battery information." >&2
 fi
 
-batteryCapacity=$( cat /sys/class/power_supply/mc13892_bat/capacity )
-batteryStatus=$( cat /sys/class/power_supply/mc13892_bat/status )
-
 # 4.08 = 90% => 4.19 = 100 %
 # 3.12 = 10% => 3.00 = 0 %
 
