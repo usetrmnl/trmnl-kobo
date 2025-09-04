@@ -50,13 +50,14 @@ This project wouldn’t be possible without the incredible work of the open-sour
 
 ## Installation
 Here are the steps to get the TRMNL app working on your Kobo (show hidden folder in your computer if you don't see folder starting with a dot)
-- Install NickelMenu on your Kobo 
+- Install NickelMenu on your Kobo **(only needed once, skip this step if upgrading from previous release)**
   - Connect your Kobo with Usb, copy **KoboRoot.tgz** to the folder name **.kobo** safely eject and restart.
   - Available in this repo in /doc/distrib/nickelmenu
-- Install Kobostuff
+- Install Kobostuff **(only needed once, skip this step if upgrading from previous release)**
   - Connect your Kobo with Usb, copy **KoboRoot.tgz** to the folder name **.kobo** safely eject and restart.
   - Available in this repo in the archive **/doc/distrib/kobostuff/kobo-stuff-1.6.N-r18901.tar.xz**
-- Copy TRMNL folder to the Kobo in **.adds** folder (to get **.adds/TRMNL/**)
+- Copy TRMNL folder to the Kobo in **.adds** folder (to get **.adds/TRMNL/**) from the latest release: [releases](https://github.com/usetrmnl/trmnl-kobo/releases)
+  - If upgrading, take care of your config.json
 - Edit **config.json** located in **.adds/TRMNL** to setup:
   - **TrmnlId**: Device Id/Mac address
   - **TrmnlToken**: Device token/API key
@@ -66,6 +67,7 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - **ImageFormat**: bmp to behave like TRMNL OG, png, if you configured your device to something else (Kobo Libra, Kindle PW 7th gen for Clara HD).
     - Note: DPI might be too big, below Kindle PW 7th gen for Clara HD: 
     - ![Capture](./doc/img/nottrmnlogsupport.png)
+    - Note: If using TERMINUS and PNG media/type, please [see guide to fix orientation](https://github.com/usetrmnl/trmnl-kobo/issues/17#issuecomment-3237420484), thanks [z0rzi](https://github.com/z0rzi)
   - Default is:
 ```
 {

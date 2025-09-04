@@ -89,7 +89,7 @@ case "$raw_signal_info" in
     esac
 
     percentage_value_for_formula=$numerator
-    echo "Info: Detected percentage signal: $raw_signal_info. Using $percentage_value_for_formula for conversion."
+    #echo "Info: Detected percentage signal: $raw_signal_info. Using $percentage_value_for_formula for conversion."
     signal_dbm=$(convert_percentage_to_dbm "$percentage_value_for_formula")
 
     if [ -z "$signal_dbm" ]; then # Check if conversion function failed

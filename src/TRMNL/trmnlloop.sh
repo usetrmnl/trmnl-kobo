@@ -47,10 +47,8 @@ trmnl_fake_voltage="${voltage_mv:0:${#voltage_mv}-3}.${voltage_mv: -3}"
 
 # get signal quality
 rssi=$(./scripts/getrssi.sh)
-rssi_status=$?
 
-
-curl "${trmnl_apiurl}/display" \
+curl "${trmnl_apiurl}/display" -L \
     -H "ID: $trmnl_id" \
     -H "Access-Token: $trmnl_token" \
     -H "Battery-Voltage: $trmnl_fake_voltage" \
@@ -69,7 +67,7 @@ if [ $curl_status -ne 0 ]; then
     sleep 15s
 else
     image_url=$(jq -r '.image_url' /tmp/trmnl.json)
-    curl -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
+    curl -L -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
     curl_status=$?
     ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
     if [ $curl_status -ne 0 ]; then
@@ -81,7 +79,8 @@ else
     else
         # With png image is already in portrait, no need to rotate, with bmp/legacy, rotation is needed, it here that we should support reverse orientation
         if [ "$trmnl_image_format" = "bmp" ]; then
-            ./bin/fbink/fbdepth -r 0
+            # Rotation -r 0 break BMP rendering, rotate it 180 more to go from portrait to landscape inverted
+            ./bin/fbink/fbdepth -r 2
         fi
         ./bin/fbink/fbink -g file=/tmp/trmnl.$trmnl_image_format,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f
 
