@@ -13,6 +13,7 @@ This repository contains the implementation and a guide to make your kobo acts a
 - Kobo Clara 2E 
 - Kobo Aura Second Edition - (Device without activity Led)
   - ![Capture](./doc/img/Koboaurasecondedition.png)
+- Kobo Aura ONE
 - Kobo Libra 2
   - ![Capture](./doc/img/libra2.jpg)
 - Kobo Libra 2 Color 
