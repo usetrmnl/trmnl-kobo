@@ -18,6 +18,7 @@ This repository contains the implementation and a guide to make your kobo acts a
   - ![Capture](./doc/img/libra2.jpg)
 - Kobo Libra 2 Color 
   - ![Capture](./doc/img/libracolor.jpg)
+- Kobo Touch
 
   
 
@@ -52,11 +53,11 @@ This project wouldn’t be possible without the incredible work of the open-sour
 ## Installation
 Here are the steps to get the TRMNL app working on your Kobo (show hidden folder in your computer if you don't see folder starting with a dot)
 - Install NickelMenu on your Kobo **(only needed once, skip this step if upgrading from previous release)**
-  - Connect your Kobo with Usb, copy **KoboRoot.tgz** to the folder name **.kobo** safely eject and restart.
+  - Connect your Kobo with Usb, copy **KoboRoot.tgz** to the folder name **.kobo**, safely eject and restart.
   - Available in this repo in /doc/distrib/nickelmenu
 - Install Kobostuff **(only needed once, skip this step if upgrading from previous release)**
   - Connect your Kobo with Usb, copy **KoboRoot.tgz** to the folder name **.kobo** safely eject and restart.
-  - Available in this repo in the archive **/doc/distrib/kobostuff/kobo-stuff-1.6.N-r18901.tar.xz**
+  - Available in this repo in the archive **/doc/distrib/kobostuff/kobo-stuff-1.6.N-r18901.tar.xz** - extract **KoboRoot.tgz** from this archive and copy it to the folder name **.kobo**.
 - Copy TRMNL folder to the Kobo in **.adds** folder (to get **.adds/TRMNL/**) from the latest release: [releases](https://github.com/usetrmnl/trmnl-kobo/releases)
   - If upgrading, take care of your config.json
 - Edit **config.json** located in **.adds/TRMNL** to setup:
@@ -116,3 +117,4 @@ The fetch/display/sleep if performed by trmnlloop.sh script called in a loop by 
 - plan next wake up alarm using rtcwake for the time request by the server
 - sleep (suspend to memory) using rtcwake or suspend to memory if rtcwake can't do it
   - a swipe on screen will wake the device up and force a refresh 
+
