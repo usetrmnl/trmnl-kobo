@@ -49,3 +49,12 @@ if [ $debug_to_screen -ne 0 ]; then
 fi
 
 echo "$1" >>/tmp/debug.log 2>&1
+
+if [ "$log_to_server" != "NONE" ]; then
+	if [ "$log_to_server" = "WARN" ] && [ "$2" = "WARN" ]; then
+		./scripts/logToServer.sh $1
+	elif [ "$log_to_server" = "DEBUG" ]; then
+		./scripts/logToServer.sh $1
+	fi
+fi
+

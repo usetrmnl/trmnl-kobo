@@ -13,6 +13,9 @@ export trmnl_apiurl="$(jq -r '.TrmnlApiUrl' config.json)"
 # Do not log to screen if 0, otherwise log to screen too
 export debug_to_screen=$(jq -r '.DebugToScreen' config.json)
 
+# Log level to send to server [DEBUG, WARN, NONE]
+export log_to_server=$(jq -r '.LogToServer' config.json)
+
 # Set a maximum iteration, if 0, do not stop
 export trmnl_loop_iteration_stop=$(jq -r '.LoopMaxIteration' config.json)
 
@@ -351,13 +354,13 @@ hwclock -w -u
 
 while true; do
     count=$((count + 1))
-    ./scripts/log.sh "$(date +%T) >> Loop ${count}"
+    ./scripts/log.sh "$(date +%T) >> Loop ${count}" "DEBUG"
     echo  >>/tmp/debug.log 2>&1
 
     # logging everything block the suspend
     ./trmnlloop.sh
     if [ $count -eq $trmnl_loop_iteration_stop ] && [ $trmnl_loop_iteration_stop -ne 0 ]; then
-        ./scripts/log.sh "Stopping script after $count iterations."
+        ./scripts/log.sh "Stopping script after $count iterations." "DEBUG"
         break
     fi
 done
