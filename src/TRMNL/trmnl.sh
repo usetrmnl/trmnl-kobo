@@ -14,7 +14,8 @@ export trmnl_apiurl="$(jq -r '.TrmnlApiUrl' config.json)"
 export debug_to_screen=$(jq -r '.DebugToScreen' config.json)
 
 # Log level to send to server [DEBUG, WARN, NONE]
-export log_to_server=$(jq -r '.LogToServer' config.json)
+server_log_level=$(jq -r '.LogToServer' config.json)
+export log_to_server=${server_log_level:-"NONE"}
 
 # Set a maximum iteration, if 0, do not stop
 export trmnl_loop_iteration_stop=$(jq -r '.LoopMaxIteration' config.json)
