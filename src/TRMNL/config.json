@@ -6,5 +6,6 @@
     "LoopMaxIteration": 0,
     "NetworkCheckPingHost": "1.1.1.1",
     "ConnectedGracePeriod": 30,
+    "RetryCount": 5,
     "ImageFormat": "png" 
 }

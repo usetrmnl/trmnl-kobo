@@ -19,7 +19,7 @@ for i in $(seq 1 ${trmnl_loop_connected_grace_period:-30}); do
 done
 ./scripts/log.sh "Proceeding after Wi-Fi connection check"
 
-retry=5
+retry=${trmnl_loop_retry_count:-5}
 
 # Check if the battery directory exists
 if [ -d /sys/class/power_supply/mc13892_bat ]; then
@@ -54,7 +54,7 @@ trmnl_fake_voltage="${voltage_mv:0:${#voltage_mv}-3}.${voltage_mv: -3}"
 # get signal quality
 rssi=$(./scripts/getrssi.sh)
 
-curl "${trmnl_apiurl}/display" -L \
+./scripts/retry.sh $retry curl "${trmnl_apiurl}/display" -L \
     -H "ID: $trmnl_id" \
     -H "Access-Token: $trmnl_token" \
     -H "Battery-Voltage: $trmnl_fake_voltage" \
@@ -73,7 +73,7 @@ if [ $curl_status -ne 0 ]; then
     sleep 15s
 else
     image_url=$(jq -r '.image_url' /tmp/trmnl.json)
-    curl -L -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
+    ./scripts/retry.sh $retry curl -L -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
     curl_status=$?
     ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
     if [ $curl_status -ne 0 ]; then
