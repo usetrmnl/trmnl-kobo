@@ -1,5 +1,7 @@
 #!/bin/sh
 
+SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)"
+
 # NOTE: Close any non-standard fds, so that it doesn't come back to bite us in the ass with USBMS (or sockets) later...
 for fd in /proc/"$$"/fd/*; do
     close_me="false"
@@ -49,7 +51,7 @@ for fd in /proc/"$$"/fd/*; do
     fi
 done
 
-./release-ip.sh
+"$SCRIPT_DIR/release-ip.sh"
 
 # NOTE: Prefer dhcpcd over udhcpc if available. That's what Nickel uses,
 #       and udhcpc appears to trip some insanely wonky corner cases on current FW (#6421)
