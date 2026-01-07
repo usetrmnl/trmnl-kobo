@@ -7,10 +7,19 @@
 
 ./scripts/log.sh "restore wifi"
 ./scripts/restore-wifi-async.sh >>/tmp/debug.log 2>&1
-sleep 8s # give time to the kobo to reconnect (KOBO mini is okay with 5s, clara needs more)
 
-sleep $trmnl_loop_connected_grace_period
+# Wait for Wi-Fi
+./scripts/log.sh "Waiting for Wi-Fi to be up..."
+for i in $(seq 1 ${trmnl_loop_connected_grace_period:-30}); do
+    if ping -W 1 -c 1 ${trmnl_network_check_ping_host:-1.1.1.1}; then
+	./scripts/log.sh "Wi-Fi is up"
+        break
+    fi
+    sleep 1
+done
+./scripts/log.sh "Proceeding after Wi-Fi connection check"
 
+retry=${trmnl_loop_retry_count:-5}
 
 # Check if the battery directory exists
 if [ -d /sys/class/power_supply/mc13892_bat ]; then
@@ -45,7 +54,7 @@ trmnl_fake_voltage="${voltage_mv:0:${#voltage_mv}-3}.${voltage_mv: -3}"
 # get signal quality
 rssi=$(./scripts/getrssi.sh)
 
-curl "${trmnl_apiurl}/display" -L \
+./scripts/retry.sh $retry curl "${trmnl_apiurl}/display" -L \
     -H "ID: $trmnl_id" \
     -H "Access-Token: $trmnl_token" \
     -H "Battery-Voltage: $trmnl_fake_voltage" \
@@ -64,7 +73,7 @@ if [ $curl_status -ne 0 ]; then
     sleep 15s
 else
     image_url=$(jq -r '.image_url' /tmp/trmnl.json)
-    curl -L -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
+    ./scripts/retry.sh $retry curl -L -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
     curl_status=$?
     ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
     if [ $curl_status -ne 0 ]; then

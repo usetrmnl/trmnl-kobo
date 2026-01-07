@@ -16,6 +16,12 @@ export debug_to_screen=$(jq -r '.DebugToScreen' config.json)
 # Set a maximum iteration, if 0, do not stop
 export trmnl_loop_iteration_stop=$(jq -r '.LoopMaxIteration' config.json)
 
+# Set a ping host to check network connection
+export trmnl_network_check_ping_host=$(jq -r '.NetworkCheckPingHost' config.json)
+
+# Retry count for network operations
+export trmnl_retry_count=$(jq -r '.RetryCount' config.json)
+
 # If 0, do not wait once connected to wifi, otherwise wait X sec to let user connect to SSH and troubleshoot
 export trmnl_loop_connected_grace_period=$(jq -r '.ConnectedGracePeriod' config.json)
 
