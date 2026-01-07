@@ -7,10 +7,19 @@
 
 ./scripts/log.sh "restore wifi"
 ./scripts/restore-wifi-async.sh >>/tmp/debug.log 2>&1
-sleep 8s # give time to the kobo to reconnect (KOBO mini is okay with 5s, clara needs more)
 
-sleep $trmnl_loop_connected_grace_period
+# Wait for Wi-Fi
+./scripts/log.sh "Waiting for Wi-Fi to be up..."
+for i in $(seq 1 ${trmnl_loop_connected_grace_period:-30}); do
+    if ping -W 1 -c 1 ${trmnl_network_check_ping_host:-1.1.1.1}; then
+	./scripts/log.sh "Wi-Fi is up"
+        break
+    fi
+    sleep 1
+done
+./scripts/log.sh "Proceeding after Wi-Fi connection check"
 
+retry=5
 
 # Check if the battery directory exists
 if [ -d /sys/class/power_supply/mc13892_bat ]; then

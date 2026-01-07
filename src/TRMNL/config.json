@@ -4,6 +4,7 @@
     "TrmnlApiUrl": "https://usetrmnl.com/api",
     "DebugToScreen": 0,
     "LoopMaxIteration": 0,
-    "ConnectedGracePeriod": 0,
+    "NetworkCheckPingHost": "1.1.1.1",
+    "ConnectedGracePeriod": 30,
     "ImageFormat": "png" 
 }
