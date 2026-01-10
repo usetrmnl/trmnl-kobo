@@ -70,7 +70,9 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
     - Note: DPI might be too big, below Kindle PW 7th gen for Clara HD: 
     - ![Capture](./doc/img/nottrmnlogsupport.png)
     - Note: If using TERMINUS and PNG media/type, please [see guide to fix orientation](https://github.com/usetrmnl/trmnl-kobo/issues/17#issuecomment-3237420484), thanks [z0rzi](https://github.com/z0rzi)
-  - Default is:
+  - **IgnoreCurlErrors**: Set to `true` to ignore errors from `curl` commands during the TRMNL loop and retry in the next iteration. This will continue showing outdated screen rather than the error screen. Default is `false`. This is helpful for dodgy network connections.
+  - **WpaNetworkId**: Specifies the WPA network identifier to use. Default is `-1`, which means no specific network ID is set.
+    - You can get the id by ssh'ing into Kobo and running `wpa_cli list_networks`, using ID of the network you want. 
 ```
 {
     "TrmnlId": "your TRMNL Mac Address",
