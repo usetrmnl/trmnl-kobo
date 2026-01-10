@@ -1,5 +1,19 @@
 #!/bin/sh
 
+function ErrorOnCurl(){
+    if [ "$trmnl_loop_ignore_curl_errors" = "true" ]; then
+        ./scripts/log.sh "Ignoring curl error as per configuration"
+        return
+    else
+        ./bin/fbink/fbdepth -r 0
+        ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
+        ./bin/fbink/fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
+        ./bin/fbink/fbdepth -r -1
+        sleep 15s
+    fi
+}
+
+
 ./scripts/ledToggle.sh 8 >>/tmp/debug.log 2>&1
 
 ./scripts/log.sh "enable wifi"
@@ -57,22 +71,14 @@ curl_status=$?
 json_content=$(cat /tmp/trmnl.json)
 ./scripts/log.sh "TRMNL api display returned $curl_status with ${json_content}"
 if [ $curl_status -ne 0 ]; then
-    ./bin/fbink/fbdepth -r 0
-    ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
-    ./bin/fbink/fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
-    ./bin/fbink/fbdepth -r -1
-    sleep 15s
+    ErrorOnCurl
 else
     image_url=$(jq -r '.image_url' /tmp/trmnl.json)
     curl -L -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
     curl_status=$?
     ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
     if [ $curl_status -ne 0 ]; then
-        ./bin/fbink/fbdepth -r 0
-        ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
-        ./bin/fbink/fbink -q -m -y -5 "Retrieve TRMNL S3 $trmnl_image_format failed ($curl_status)"  > /dev/null 2>&1
-        ./bin/fbink/fbdepth -r -1
-        sleep 15s
+        ErrorOnCurl
     else
         # With png image is already in portrait, no need to rotate, with bmp/legacy, rotation is needed, it here that we should support reverse orientation
         if [ "$trmnl_image_format" = "bmp" ]; then
