@@ -5,5 +5,7 @@
     "DebugToScreen": 0,
     "LoopMaxIteration": 0,
     "ConnectedGracePeriod": 0,
-    "ImageFormat": "png" 
+    "ImageFormat": "png",
+    "IgnoreCurlErrors": "false",
+    "WpaNetworkId": "-1"
 }
