@@ -56,10 +56,12 @@ curl_status=$?
 
 json_content=$(cat /tmp/trmnl.json)
 ./scripts/log.sh "TRMNL api display returned $curl_status with ${json_content}"
+
+./bin/fbink/fbdepth -r $trmnl_screen_rotation
+
 if [ $curl_status -ne 0 ]; then
-    ./bin/fbink/fbdepth -r 0
-    ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
-    ./bin/fbink/fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
+    ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f -w > /dev/null 2>&1
+    ./bin/fbink/fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)" -w > /dev/null 2>&1
     ./bin/fbink/fbdepth -r -1
     sleep 15s
 else
@@ -68,19 +70,15 @@ else
     curl_status=$?
     ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
     if [ $curl_status -ne 0 ]; then
-        ./bin/fbink/fbdepth -r 0
-        ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
-        ./bin/fbink/fbink -q -m -y -5 "Retrieve TRMNL S3 $trmnl_image_format failed ($curl_status)"  > /dev/null 2>&1
+        ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f -w > /dev/null 2>&1
+        ./bin/fbink/fbink -q -m -y -5 "Retrieve TRMNL S3 $trmnl_image_format failed ($curl_status)" -w  > /dev/null 2>&1
         ./bin/fbink/fbdepth -r -1
         sleep 15s
     else
-        # With png image is already in portrait, no need to rotate, with bmp/legacy, rotation is needed, it here that we should support reverse orientation
-        if [ "$trmnl_image_format" = "bmp" ]; then
-            # Rotation -r 0 break BMP rendering, rotate it 180 more to go from portrait to landscape inverted
-            ./bin/fbink/fbdepth -r 2
-        fi
-        ./bin/fbink/fbink -g file=/tmp/trmnl.$trmnl_image_format,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f
-
+        # white flash to prevent ghosting
+        ./bin/fbink/fbink -k -w -c -f
+        # -w fixed the buffering problem where the right quarter of the string was not refreshing / updating        
+        ./bin/fbink/fbink -g file=/tmp/trmnl.$trmnl_image_format,valign=CENTER,halign=CENTER,h=-2,w=0  -c -f -w
         # rotate back to portrait mode
         ./bin/fbink/fbdepth -r -1
 
