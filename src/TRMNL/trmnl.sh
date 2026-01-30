@@ -19,6 +19,9 @@ export trmnl_loop_iteration_stop=$(jq -r '.LoopMaxIteration' config.json)
 # If 0, do not wait once connected to wifi, otherwise wait X sec to let user connect to SSH and troubleshoot
 export trmnl_loop_connected_grace_period=$(jq -r '.ConnectedGracePeriod' config.json)
 
+# Screen rotation ID. 0 for landscape, 1 for 90 degrees rotation, 2 for 180 degrees, and 3 for 270 degrees
+export trmnl_screen_rotation=$(jq -r '.ScreenRotation' config.json)
+
 # Must me Major.Minor.Revision format
 export trmnl_firmware_version=$(cat version.txt)
 
