@@ -77,7 +77,7 @@ else
     else
         # white flash to prevent ghosting
         ./bin/fbink/fbink -k -w -c -f
-        # -w fixed the buffering problem where the right quarter of the string was not refreshing / updating        
+        # -w fixed the buffering problem where the right quarter of the screen was not updating        
         ./bin/fbink/fbink -g file=/tmp/trmnl.$trmnl_image_format,valign=CENTER,halign=CENTER,h=-2,w=0  -c -f -w
         # rotate back to portrait mode
         ./bin/fbink/fbdepth -r -1
