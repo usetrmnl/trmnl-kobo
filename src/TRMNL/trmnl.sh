@@ -10,6 +10,9 @@ export trmnl_token="$(jq -r '.TrmnlToken' config.json)"
 # Change if BYOS, no trailing slash
 export trmnl_apiurl="$(jq -r '.TrmnlApiUrl' config.json)"
 
+# Upload logs to BYOS /api/log endpoint when enabled
+export trmnl_log_upload_enabled="$(jq -r '.LogUploadEnabled // 0' config.json)"
+
 # Do not log to screen if 0, otherwise log to screen too
 export debug_to_screen=$(jq -r '.DebugToScreen' config.json)
 
@@ -18,9 +21,6 @@ export trmnl_loop_iteration_stop=$(jq -r '.LoopMaxIteration' config.json)
 
 # If 0, do not wait once connected to wifi, otherwise wait X sec to let user connect to SSH and troubleshoot
 export trmnl_loop_connected_grace_period=$(jq -r '.ConnectedGracePeriod' config.json)
-
-# Must me Major.Minor.Revision format
-export trmnl_firmware_version=$(cat version.txt)
 
 # Read screen orientation, normal, or reversed
 #export trmnl_screen_orientation=$(jq -r '.ScreenOrientation' config.json)
@@ -36,6 +36,17 @@ export TRMNL_DIR="${TRMNL_DIR:-${SCRIPT_DIR}}"
 
 # We rely on starting from our working directory, and it needs to be set, sane and absolute.
 cd "${TRMNL_DIR:-/dev/null}" || exit
+
+if [ -s "${TRMNL_DIR}/version.txt" ]; then
+    export trmnl_firmware_version="$(cat "${TRMNL_DIR}/version.txt")"
+else
+    export trmnl_firmware_version="unknown"
+fi
+
+export trmnl_log_queue_file="/tmp/trmnl-log-queue.ndjson"
+export trmnl_last_battery_capacity=""
+export trmnl_last_battery_voltage=""
+export trmnl_last_rssi=""
 
 # To make USBMS behave, relocalize ourselves outside of onboard
 if [ "${SCRIPT_DIR}" != "/tmp" ]; then

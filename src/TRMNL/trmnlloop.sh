@@ -44,6 +44,9 @@ trmnl_fake_voltage="${voltage_mv:0:${#voltage_mv}-3}.${voltage_mv: -3}"
 
 # get signal quality
 rssi=$(./scripts/getrssi.sh)
+export trmnl_last_battery_capacity="$batteryCapacity"
+export trmnl_last_battery_voltage="$trmnl_fake_voltage"
+export trmnl_last_rssi="$rssi"
 
 curl "${trmnl_apiurl}/display" -L \
     -H "ID: $trmnl_id" \
@@ -55,7 +58,12 @@ curl "${trmnl_apiurl}/display" -L \
 curl_status=$?
 
 json_content=$(cat /tmp/trmnl.json)
-./scripts/log.sh "TRMNL api display returned $curl_status with ${json_content}"
+if [ $curl_status -ne 0 ]; then
+    ./scripts/log.sh "TRMNL api display returned $curl_status with ${json_content}" "error"
+else
+    ./scripts/log.sh "TRMNL api display returned $curl_status with ${json_content}"
+fi
+./scripts/flush-logs.sh
 if [ $curl_status -ne 0 ]; then
     ./bin/fbink/fbdepth -r 0
     ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
@@ -66,7 +74,11 @@ else
     image_url=$(jq -r '.image_url' /tmp/trmnl.json)
     curl -L -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
     curl_status=$?
-    ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
+    if [ $curl_status -ne 0 ]; then
+        ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}" "error"
+    else
+        ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
+    fi
     if [ $curl_status -ne 0 ]; then
         ./bin/fbink/fbdepth -r 0
         ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
@@ -96,7 +108,7 @@ else
         if [ $? -eq 0 ]; then
             ./scripts/log.sh "Enabled suspend state ok"
         else
-            ./scripts/log.sh "Enable suspend state failed"
+            ./scripts/log.sh "Enable suspend state failed" "error"
         fi
 
         ./scripts/log.sh "Setting up rtcwake alarm"
@@ -107,7 +119,7 @@ else
         if [ $? -eq 0 ]; then
             ./scripts/log.sh "rtcwake ok"
         else
-            ./scripts/log.sh "rtcwake failed, will try secondary suspend to memory next"
+            ./scripts/log.sh "rtcwake failed, will try secondary suspend to memory next" "error"
         fi
 
         # Calculate the elapsed time
@@ -126,7 +138,7 @@ else
             if [ $? -eq 0 ]; then
                 ./scripts/log.sh "Suspend to mem ok"
             else
-                ./scripts/log.sh "Suspend to mem failed"
+                ./scripts/log.sh "Suspend to mem failed" "error"
             fi
 
             ./scripts/log.sh "Disable suspend state"
@@ -134,7 +146,7 @@ else
             if [ $? -eq 0 ]; then
                 ./scripts/log.sh "Disabled suspend state ok"
             else
-                ./scripts/log.sh "Disable suspend state failed"
+                ./scripts/log.sh "Disable suspend state failed" "error"
             fi
         fi
     fi
