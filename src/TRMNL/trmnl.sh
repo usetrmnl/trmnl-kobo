@@ -19,6 +19,12 @@ export trmnl_loop_iteration_stop=$(jq -r '.LoopMaxIteration' config.json)
 # If 0, do not wait once connected to wifi, otherwise wait X sec to let user connect to SSH and troubleshoot
 export trmnl_loop_connected_grace_period=$(jq -r '.ConnectedGracePeriod' config.json)
 
+# Ignore errors on curl and just retry on next loop
+export trmnl_loop_ignore_curl_errors=$(jq -r '.IgnoreCurlErrors' config.json 2>/dev/null || echo "false")
+
+# WPA Network Identifier
+export trmnl_loop_wpa_network_id=$(jq -r '.WpaNetworkId' config.json 2>/dev/null || echo "-1")
+
 # Must me Major.Minor.Revision format
 export trmnl_firmware_version=$(cat version.txt)
 

@@ -215,3 +215,5 @@ ifconfig "${INTERFACE}" up
 
 pkill -0 wpa_supplicant ||
     wpa_supplicant -D "${WPA_SUPPLICANT_DRIVER}" -s -i "${INTERFACE}" -c /etc/wpa_supplicant/wpa_supplicant.conf -C /var/run/wpa_supplicant -B
+
+./scripts/force-wifi-connection.sh >>/tmp/debug.log 2>&1
