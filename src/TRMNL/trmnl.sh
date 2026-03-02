@@ -10,6 +10,9 @@ export trmnl_token="$(jq -r '.TrmnlToken' config.json)"
 # Change if BYOS, no trailing slash
 export trmnl_apiurl="$(jq -r '.TrmnlApiUrl' config.json)"
 
+# Optional query string appended to image_url before fetching image
+export trmnl_image_request_query="$(jq -r '.ImageRequestQuery // ""' config.json)"
+
 # Do not log to screen if 0, otherwise log to screen too
 export debug_to_screen=$(jq -r '.DebugToScreen' config.json)
 
