@@ -64,9 +64,26 @@ if [ $curl_status -ne 0 ]; then
     sleep 15s
 else
     image_url=$(jq -r '.image_url' /tmp/trmnl.json)
-    curl -L -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
+    image_fetch_url="$image_url"
+
+    if [ -n "${trmnl_image_request_query:-}" ]; then
+        normalized_query="${trmnl_image_request_query#\?}"
+        normalized_query="${normalized_query#&}"
+        if [ -n "$normalized_query" ]; then
+            case "$image_fetch_url" in
+                *\?*)
+                    image_fetch_url="${image_fetch_url}&${normalized_query}"
+                    ;;
+                *)
+                    image_fetch_url="${image_fetch_url}?${normalized_query}"
+                    ;;
+            esac
+        fi
+    fi
+
+    curl -L -o /tmp/trmnl.$trmnl_image_format "${image_fetch_url}" >>/tmp/debug.log 2>&1
     curl_status=$?
-    ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}"
+    ./scripts/log.sh "TRMNL fetch image from ${image_fetch_url} (base: ${image_url}) returned ${curl_status}"
     if [ $curl_status -ne 0 ]; then
         ./bin/fbink/fbdepth -r 0
         ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1

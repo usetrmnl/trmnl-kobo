@@ -2,6 +2,7 @@
     "TrmnlId": "your TRMNL Mac Address",
     "TrmnlToken": "your TRMNL API Key",
     "TrmnlApiUrl": "https://usetrmnl.com/api",
+    "ImageRequestQuery": "",
     "DebugToScreen": 0,
     "LoopMaxIteration": 0,
     "ConnectedGracePeriod": 0,

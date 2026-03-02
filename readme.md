@@ -64,6 +64,8 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - **TrmnlId**: Device Id/Mac address
   - **TrmnlToken**: Device token/API key
   - **TrmnlApiUrl**: Change this if your Bringing Your Own Server (BYOS)
+  - **ImageRequestQuery**: Optional raw query string appended to every image URL before Kobo fetches it.
+    - Example for Inker to avoid inversion: `mode=einkPreview`
   - **LoopMaxIteration**: Set to 0 to run indifinitely (for initial setup/troubeleshooting, pick a small number, so that the KOBO automatically restart)
   - **ConnectedGracePeriod**: If your KOBO regularly shows connection issue, increase this (delay in seconds after requesting to connect to the wifi, to request a TRMNL display information and image).
   - **ImageFormat**: bmp to behave like TRMNL OG, png, if you configured your device to something else (Kobo Libra, Kindle PW 7th gen for Clara HD).
@@ -76,6 +78,7 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
     "TrmnlId": "your TRMNL Mac Address",
     "TrmnlToken": "your TRMNL API Key",
     "TrmnlApiUrl": "https://usetrmnl.com/api",
+    "ImageRequestQuery": "",
     "DebugToScreen": 0,
     "LoopMaxIteration": 0,
     "ConnectedGracePeriod": 0,
