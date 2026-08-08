@@ -65,6 +65,10 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - **TrmnlToken**: Device token/API key
   - **TrmnlApiUrl**: Change this if your Bringing Your Own Server (BYOS)
   - **AppendApiPath**: Defaults to `"true"`, which appends `/api` to **TrmnlApiUrl** when it does not already end with it (any trailing slash is dropped first). Leaving `/api` off a BYOS url is an easy mistake to make. Set to `"false"` if your server really does serve the API from the root.
+  - **LogToServer**: How much of the log to POST to your server's `/log` endpoint. Case-sensitive, and any unrecognised value (including omitting the setting, or a typo such as `"debug"`) silently sends nothing.
+    - `"NONE"`: send nothing. This is the effective default.
+    - `"WARN"`: send only the warnings, such as failing to connect to the wifi or a failed suspend.
+    - `"DEBUG"`: send every log line. That is one HTTP request per line, a couple of dozen per refresh, each holding the wifi up a little longer, so prefer it for troubleshooting over everyday use.
   - **LoopMaxIteration**: Set to 0 to run indifinitely (for initial setup/troubeleshooting, pick a small number, so that the KOBO automatically restart)
   - **ConnectedGracePeriod**: Extra seconds to wait for the wifi to obtain an IP, on top of the 8s allowed by default. The wait ends as soon as an IP shows up, so raising this only matters if your KOBO regularly shows connection issues.
   - **ImageFormat**: bmp to behave like TRMNL OG, png, if you configured your device to something else (Kobo Libra, Kindle PW 7th gen for Clara HD).
@@ -81,6 +85,7 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
     "TrmnlApiUrl": "https://usetrmnl.com/api",
     "AppendApiPath": "true",
     "DebugToScreen": 0,
+    "LogToServer": "NONE",
     "LoopMaxIteration": 0,
     "ConnectedGracePeriod": 0,
     "ImageFormat": "bmp" 

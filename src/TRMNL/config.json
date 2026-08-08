@@ -4,6 +4,7 @@
     "TrmnlApiUrl": "https://usetrmnl.com/api",
     "AppendApiPath": "true",
     "DebugToScreen": 0,
+    "LogToServer": "NONE",
     "LoopMaxIteration": 0,
     "ConnectedGracePeriod": 0,
     "ImageFormat": "png",
