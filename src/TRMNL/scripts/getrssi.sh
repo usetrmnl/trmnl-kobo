@@ -1,6 +1,8 @@
 #!/bin/sh
 
-test_string=$( iwconfig | grep -i "Signal level=" )
+# iwconfig separates the label from the value with '=' when the driver sets the
+# IW_QUAL_LEVEL_UPDATED bit and ':' when it doesn't, so accept either.
+test_string=$( iwconfig 2> /dev/null | grep -i "Signal level[:=]" )
 
 # --- Percentage to dBm Conversion Function ---
 # IMPORTANT: This is an EXAMPLE formula. Adjust it for your device!
@@ -37,13 +39,13 @@ convert_percentage_to_dbm() (
 # xargs is used to trim leading/trailing whitespace.
 raw_signal_info=""
 if [ -n "$test_string" ]; then # Process only if test_string is not empty
-    raw_signal_info=$(echo "$test_string" | awk -F 'Signal level=' '
+    raw_signal_info=$(echo "$test_string" | awk -F 'Signal level[:=]' '
         NF > 1 {
             # If "Signal level=" is found, $2 contains the rest of the line.
             # Now, isolate the value before " Noise level=" if it exists.
             # We use a general field separator for the second awk.
             print $2
-        }' | awk -F '[[:space:]]+Noise level=' '{print $1}' | xargs) # xargs trims
+        }' | awk -F '[[:space:]]+Noise level[:=]' '{print $1}' | xargs) # xargs trims
 fi
 
 # Check if extraction was successful
