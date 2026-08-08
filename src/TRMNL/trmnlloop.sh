@@ -37,6 +37,8 @@ esac
 
 
 # Check if the battery directory exists
+# (exported so logToServer.sh, which runs as a grandchild, can report it too)
+export batteryCapacity
 if [ -d /sys/class/power_supply/mc13892_bat ]; then
   # Set variables from the second possible path
   batteryCapacity=$(cat /sys/class/power_supply/mc13892_bat/capacity)
@@ -52,19 +54,7 @@ else
   ./scripts/log.sh "Error: Could not find battery information." "DEBUG"
 fi
 
-# 4.08 = 90% => 4.19 = 100 %
-# 3.12 = 10% => 3.00 = 0 %
-
-trmnl_low_mv=3000
-trmnl_high_mv=4195
-
-range_mv=$((trmnl_high_mv - trmnl_low_mv))
-voltage_mv=$(( (batteryCapacity * range_mv / 100) + trmnl_low_mv ))
-
-# Convert back to voltage with decimal using string manipulation
-trmnl_fake_voltage="${voltage_mv:0:${#voltage_mv}-3}.${voltage_mv: -3}"
-
-./scripts/log.sh "Battery capacity: ${batteryCapacity}%- Status: ${batteryStatus} - Voltage for API: ${trmnl_fake_voltage}V" "DEBUG"
+./scripts/log.sh "Battery capacity: ${batteryCapacity}% - Status: ${batteryStatus}" "DEBUG"
 
 # get signal quality
 rssi=$(./scripts/getrssi.sh)
@@ -72,7 +62,7 @@ rssi=$(./scripts/getrssi.sh)
 curl "${trmnl_apiurl}/display" -L \
     -H "ID: $trmnl_id" \
     -H "Access-Token: $trmnl_token" \
-    -H "Battery-Voltage: $trmnl_fake_voltage" \
+    -H "Percent-Charged: $batteryCapacity" \
     -H "RSSI: $rssi" \
     -H "FW-Version: ${trmnl_firmware_version}" \
     -o /tmp/trmnl.json >>/tmp/debug.log 2>&1
