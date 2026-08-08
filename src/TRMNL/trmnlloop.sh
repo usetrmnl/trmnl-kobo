@@ -68,7 +68,9 @@ esac
 export rssi
 rssi=$(./scripts/getrssi.sh)
 
-curl "${trmnl_apiurl}/display" -L \
+# --fail so an HTTP error is not parsed as a payload, and time limits so a
+# stalled server cannot hold the radio on indefinitely
+curl "${trmnl_apiurl}/display" -L --fail --connect-timeout 15 --max-time 30 \
     -H "ID: $trmnl_id" \
     -H "Access-Token: $trmnl_token" \
     -H "Percent-Charged: $batteryCapacity" \
@@ -84,7 +86,9 @@ if [ $curl_status -ne 0 ]; then
     ErrorOnCurl
 else
     image_url=$(jq -r '.image_url' /tmp/trmnl.json)
-    curl -L -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
+    # Longer ceiling than the display request, the image is much bigger
+    curl -L --fail --connect-timeout 15 --max-time 60 \
+        -o /tmp/trmnl.$trmnl_image_format "${image_url}" >>/tmp/debug.log 2>&1
     curl_status=$?
     ./scripts/log.sh "TRMNL fetch image from ${image_url} returned ${curl_status}" "DEBUG"
     if [ $curl_status -ne 0 ]; then
