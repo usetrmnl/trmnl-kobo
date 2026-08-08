@@ -54,6 +54,13 @@ else
   ./scripts/log.sh "Error: Could not find battery information." "DEBUG"
 fi
 
+# Battery-Charging is a 0/1 boolean. power_supply status is one of Charging,
+# Discharging, Not charging, Full or Unknown, so only the first one counts.
+case "$batteryStatus" in
+    Charging) batteryCharging=1 ;;
+    *) batteryCharging=0 ;;
+esac
+
 ./scripts/log.sh "Battery capacity: ${batteryCapacity}% - Status: ${batteryStatus}" "DEBUG"
 
 # get signal quality
@@ -63,6 +70,7 @@ curl "${trmnl_apiurl}/display" -L \
     -H "ID: $trmnl_id" \
     -H "Access-Token: $trmnl_token" \
     -H "Percent-Charged: $batteryCapacity" \
+    -H "Battery-Charging: $batteryCharging" \
     -H "RSSI: $rssi" \
     -H "FW-Version: ${trmnl_firmware_version}" \
     -o /tmp/trmnl.json >>/tmp/debug.log 2>&1
