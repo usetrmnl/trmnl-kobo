@@ -65,7 +65,7 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - **TrmnlToken**: Device token/API key
   - **TrmnlApiUrl**: Change this if your Bringing Your Own Server (BYOS)
   - **LoopMaxIteration**: Set to 0 to run indifinitely (for initial setup/troubeleshooting, pick a small number, so that the KOBO automatically restart)
-  - **ConnectedGracePeriod**: If your KOBO regularly shows connection issue, increase this (delay in seconds after requesting to connect to the wifi, to request a TRMNL display information and image).
+  - **ConnectedGracePeriod**: Extra seconds to wait for the wifi to obtain an IP, on top of the 8s allowed by default. The wait ends as soon as an IP shows up, so raising this only matters if your KOBO regularly shows connection issues.
   - **ImageFormat**: bmp to behave like TRMNL OG, png, if you configured your device to something else (Kobo Libra, Kindle PW 7th gen for Clara HD).
     - Note: DPI might be too big, below Kindle PW 7th gen for Clara HD: 
     - ![Capture](./doc/img/nottrmnlogsupport.png)
@@ -96,7 +96,7 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
 - How to get out of TRMNL loop ?
     - To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
 - Why do sometimes I see a connection issue when KOBO's waking up ?
-  - If your wifi connection is bad, it may takes more time than the alloted delay to connect to the Wifi, if this is the case, it can be fixed using ```ConnectedGracePeriod``` setting in config.json to increase the time to connect to the wifi.
+  - If your wifi connection is bad, it may take more time to connect than the 8s allowed by default, if this is the case, it can be fixed using ```ConnectedGracePeriod``` setting in config.json to increase the time to connect to the wifi.
 
 ## Digging into sources
 
