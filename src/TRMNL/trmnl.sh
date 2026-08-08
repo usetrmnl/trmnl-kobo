@@ -10,6 +10,19 @@ export trmnl_token="$(jq -r '.TrmnlToken' config.json)"
 # Change if BYOS, no trailing slash
 export trmnl_apiurl="$(jq -r '.TrmnlApiUrl' config.json)"
 
+# Leaving /api off a BYOS url is a common mistake, so append it unless told not
+# to. jq -r renders "false" and false alike, and null when the key is absent.
+if [ "$(jq -r '.AppendApiPath' config.json 2>/dev/null)" != "false" ]; then
+    while [ "${trmnl_apiurl%/}" != "$trmnl_apiurl" ]; do # also catches ".../api/"
+        trmnl_apiurl="${trmnl_apiurl%/}"
+    done
+    case "$trmnl_apiurl" in
+        */api) ;;
+        *) trmnl_apiurl="${trmnl_apiurl}/api" ;;
+    esac
+fi
+echo "Api url in use: $trmnl_apiurl" >>/tmp/debug.log 2>&1
+
 # Do not log to screen if 0, otherwise log to screen too
 export debug_to_screen=$(jq -r '.DebugToScreen' config.json)
 
