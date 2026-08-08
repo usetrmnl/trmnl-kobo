@@ -21,9 +21,19 @@ function ErrorOnCurl(){
 
 ./scripts/log.sh "restore wifi" "DEBUG"
 ./scripts/restore-wifi-async.sh >>/tmp/debug.log 2>&1
-sleep 8s # give time to the kobo to reconnect (KOBO mini is okay with 5s, clara needs more)
 
-sleep $trmnl_loop_connected_grace_period
+# restore-wifi-async.sh connects in the background: wait for the IP instead of a
+# fixed sleep, so the radio is powered back down sooner. ConnectedGracePeriod
+# stretches the budget for slow connections.
+# NOTE: ErrorOnCurl leaves the wifi up, so after a failed iteration this returns
+#       at once on the previous lease, which release-ip.sh is about to drop. That
+#       curl likely fails too, and the iteration after it connects normally.
+grace=$trmnl_loop_connected_grace_period
+case "$grace" in # "null" if missing from config.json
+    '' | *[!0-9]*) grace=0 ;;
+esac
+./scripts/wait-for-ip.sh $((8 + grace)) >>/tmp/debug.log 2>&1 ||
+    ./scripts/log.sh "No IP obtained, trying to reach TRMNL anyway" "WARN"
 
 
 # Check if the battery directory exists
