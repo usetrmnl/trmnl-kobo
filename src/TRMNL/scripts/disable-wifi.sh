@@ -105,7 +105,7 @@ case "${POWER_TOGGLE}" in
         # Poke the kernel via ioctl on platforms without the dedicated power module...
         if [ ! -e "/drivers/${PLATFORM}/wifi/sdio_wifi_pwr.ko" ]; then
             usleep 250000
-            ./luajit lua/ntx_io.lua 208 0
+            ./bin/luajit lua/ntx_io.lua 208 0
         fi
         ;;
 esac
