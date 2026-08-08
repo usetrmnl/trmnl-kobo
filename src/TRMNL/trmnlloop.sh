@@ -1,16 +1,107 @@
 #!/bin/sh
 
+# Every trmnlloop.sh run is its own process, so the backoff state lives in /tmp,
+# which survives suspend to memory
+LAST_REFRESH_FILE=/tmp/trmnl_last_refresh
+FAILURE_COUNT_FILE=/tmp/trmnl_failures
+FIRST_RETRY_DELAY=60
+DEFAULT_REFRESH=900
+
+# Echo $1 if it is a positive integer, $2 otherwise
+SaneSeconds() {
+    case "$1" in
+        '' | *[!0-9]* | 0) echo "$2" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+# Shut the wifi down and suspend to memory for $1 seconds
+SuspendFor() {
+    suspend_seconds=$1
+
+    # A RestoreWifi still in its wpa wait would otherwise thaw after the suspend
+    # and tear down the wifi the next iteration just brought up
+    pkill -f restore-wifi-async.sh
+
+    ./scripts/log.sh "disabling wifi" "DEBUG"
+    ./scripts/disable-wifi.sh >>/tmp/debug.log 2>&1
+
+    ./scripts/log.sh "Should sleep for ${suspend_seconds}" "DEBUG"
+    sleep 5s
+
+    ./scripts/log.sh "Enable suspend state" "DEBUG"
+    echo 1 >/sys/power/state-extended >>/tmp/debug.log 2>&1
+    if [ $? -eq 0 ]; then
+        ./scripts/log.sh "Enabled suspend state ok" "DEBUG"
+    else
+        ./scripts/log.sh "Enable suspend state failed" "WARN"
+    fi
+
+    ./scripts/log.sh "Setting up rtcwake alarm" "DEBUG"
+
+    # Record the start time
+    start_time=$(date +%s)
+    ./bin/busybox_kobo rtcwake -a -s $suspend_seconds -m mem >>/tmp/debug.log 2>&1
+    if [ $? -eq 0 ]; then
+        ./scripts/log.sh "rtcwake ok"
+    else
+        ./scripts/log.sh "rtcwake failed, will try secondary suspend to memory next" "WARN"
+    fi
+
+    # Calculate the elapsed time
+    elapsed_time_in_rtcwake=$(($(date +%s) - start_time))
+
+    # Check if the elapsed time is greater than 10 seconds
+    if [ "$elapsed_time_in_rtcwake" -gt 10 ]; then
+        ./scripts/log.sh "rtcwake took more than 10 seconds, skipping suspend to mem in power state" "WARN"
+    else
+        ./scripts/log.sh  "rtcwake took ${elapsed_time_in_rtcwake}, writing suspend to mem in power state" "DEBUG"
+        ./scripts/ledToggle.sh 0  >>/tmp/debug.log 2>&1
+        sleep 1s
+        sync
+        sleep 2s
+        echo mem >/sys/power/state
+        if [ $? -eq 0 ]; then
+            ./scripts/log.sh "Suspend to mem ok" "DEBUG"
+        else
+            ./scripts/log.sh "Suspend to mem failed" "DEBUG"
+        fi
+
+        ./scripts/log.sh "Disable suspend state" "DEBUG"
+        echo 0 >/sys/power/state-extended >>/tmp/debug.log 2>&1
+        if [ $? -eq 0 ]; then
+            ./scripts/log.sh "Disabled suspend state ok" "DEBUG"
+        else
+            ./scripts/log.sh "Disable suspend state failed" "WARN"
+        fi
+    fi
+}
+
 function ErrorOnCurl(){
     if [ "$trmnl_loop_ignore_curl_errors" = "true" ]; then
         ./scripts/log.sh "Ignoring curl error as per configuration"
         return
-    else
-        ./bin/fbink/fbdepth -r 0
-        ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
-        ./bin/fbink/fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
-        ./bin/fbink/fbdepth -r -1
-        sleep 15s
     fi
+
+    ./bin/fbink/fbdepth -r 0
+    ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
+    ./bin/fbink/fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
+    ./bin/fbink/fbdepth -r -1
+
+    failures=$(cat "$FAILURE_COUNT_FILE" 2>/dev/null)
+    failures=$(($(SaneSeconds "$failures" 0) + 1))
+    echo "$failures" >"$FAILURE_COUNT_FILE"
+
+    if [ $failures -eq 1 ]; then
+        # One quick retry, the network is often back within the minute
+        retry_in=$FIRST_RETRY_DELAY
+    else
+        # Still down, settle back to whatever rate the server last asked for
+        retry_in=$(SaneSeconds "$(cat "$LAST_REFRESH_FILE" 2>/dev/null)" $DEFAULT_REFRESH)
+    fi
+
+    ./scripts/log.sh "Failure ${failures}, suspending for ${retry_in}s" "WARN"
+    SuspendFor $retry_in
 }
 
 
@@ -104,58 +195,9 @@ else
         # rotate back to portrait mode
         ./bin/fbink/fbdepth -r -1
 
-        ./scripts/log.sh "disabling wifi" "DEBUG"
-        ./scripts/disable-wifi.sh >>/tmp/debug.log 2>&1
-
-        refresh_rate=$(jq -r '.refresh_rate' /tmp/trmnl.json)
-        ./scripts/log.sh "Should sleep for ${refresh_rate}" "DEBUG"
-        sleep 5s
-
-        ./scripts/log.sh "Enable suspend state" "DEBUG"
-        echo 1 >/sys/power/state-extended >>/tmp/debug.log 2>&1
-        if [ $? -eq 0 ]; then
-            ./scripts/log.sh "Enabled suspend state ok" "DEBUG"
-        else
-            ./scripts/log.sh "Enable suspend state failed" "WARN"
-        fi
-
-        ./scripts/log.sh "Setting up rtcwake alarm" "DEBUG"
-
-        # Record the start time
-        start_time=$(date +%s)
-        ./bin/busybox_kobo rtcwake -a -s $refresh_rate -m mem >>/tmp/debug.log 2>&1
-        if [ $? -eq 0 ]; then
-            ./scripts/log.sh "rtcwake ok"
-        else
-            ./scripts/log.sh "rtcwake failed, will try secondary suspend to memory next" "WARN"
-        fi
-
-        # Calculate the elapsed time
-        elapsed_time_in_rtcwake=$(($(date +%s) - start_time))
-
-        # Check if the elapsed time is greater than 10 seconds
-        if [ "$elapsed_time_in_rtcwake" -gt 10 ]; then
-            ./scripts/log.sh "rtcwake took more than 10 seconds, skipping suspend to mem in power state" "WARN"
-        else
-            ./scripts/log.sh  "rtcwake took ${elapsed_time_in_rtcwake}, writing suspend to mem in power state" "DEBUG"
-            ./scripts/ledToggle.sh 0  >>/tmp/debug.log 2>&1
-            sleep 1s
-            sync
-            sleep 2s
-            echo mem >/sys/power/state
-            if [ $? -eq 0 ]; then
-                ./scripts/log.sh "Suspend to mem ok" "DEBUG"
-            else
-                ./scripts/log.sh "Suspend to mem failed" "DEBUG"
-            fi
-
-            ./scripts/log.sh "Disable suspend state" "DEBUG"
-            echo 0 >/sys/power/state-extended >>/tmp/debug.log 2>&1
-            if [ $? -eq 0 ]; then
-                ./scripts/log.sh "Disabled suspend state ok" "DEBUG"
-            else
-                ./scripts/log.sh "Disable suspend state failed" "WARN"
-            fi
-        fi
+        refresh_rate=$(SaneSeconds "$(jq -r '.refresh_rate' /tmp/trmnl.json)" $DEFAULT_REFRESH)
+        echo "$refresh_rate" >"$LAST_REFRESH_FILE"
+        rm -f "$FAILURE_COUNT_FILE"
+        SuspendFor $refresh_rate
     fi
 fi
