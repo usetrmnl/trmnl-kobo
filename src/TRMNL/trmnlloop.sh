@@ -56,6 +56,16 @@ SuspendFor() {
         ./scripts/log.sh "rtcwake took more than 10 seconds, skipping suspend to mem in power state" "WARN"
     else
         ./scripts/log.sh  "rtcwake took ${elapsed_time_in_rtcwake}, writing suspend to mem in power state" "DEBUG"
+        # rtcwake turns the alarm back off when it resumes, so the suspend below
+        # would have no wakeup source at all and only stir on an outside event
+        echo 0 >/sys/class/rtc/rtc0/wakealarm 2>>/tmp/debug.log
+        echo "+${suspend_seconds}" >/sys/class/rtc/rtc0/wakealarm 2>>/tmp/debug.log
+        wakealarm=$(cat /sys/class/rtc/rtc0/wakealarm 2>/dev/null)
+        if [ -n "$wakealarm" ] && [ "$wakealarm" != "0" ]; then
+            ./scripts/log.sh "wakealarm armed for ${suspend_seconds}s (at ${wakealarm})" "DEBUG"
+        else
+            ./scripts/log.sh "could not arm wakealarm, suspend has no timer" "WARN"
+        fi
         ./scripts/ledToggle.sh 0  >>/tmp/debug.log 2>&1
         sleep 1s
         sync
