@@ -96,12 +96,14 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - (Located in src/nm/TRMNL.ini in this repo)
 - TRMNL app can be started using NickelMenu
    - ![Menu](./doc/img/menu.png) 
+- To exit the TRMNL loop, press the **home button**. The loop finishes its current cycle, then hands the Kobo back to its own UI without rebooting. On a device with no home button, or if it cannot be read, the loop logs a warning at startup and the method below still works. Note that the wifi is powered down on the way out and Kobo does not always notice, so you may have to toggle wifi off and on once in the Kobo settings.
 - To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
 
 
 ## FAQ
 - How to get out of TRMNL loop ?
-    - To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
+    - To exit the TRMNL loop, press the **home button**. The loop finishes its current cycle, then hands the Kobo back to its own UI without rebooting. On a device with no home button, or if it cannot be read, the loop logs a warning at startup and the method below still works. Note that the wifi is powered down on the way out and Kobo does not always notice, so you may have to toggle wifi off and on once in the Kobo settings.
+- To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
 - Why do sometimes I see a connection issue when KOBO's waking up ?
   - If your wifi connection is bad, it may take more time to connect than the 8s allowed by default, if this is the case, it can be fixed using ```ConnectedGracePeriod``` setting in config.json to increase the time to connect to the wifi.
 
