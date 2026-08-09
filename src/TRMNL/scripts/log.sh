@@ -48,7 +48,9 @@ if [ $debug_to_screen -ne 0 ]; then
     fbink -x 1 -y $value_to_save -S 2 "$1" > /dev/null 2>&1
 fi
 
-echo "$1" >>/tmp/debug.log 2>&1
+# Timestamped so sleep durations can be read off the log. The screen copy above
+# and the server copy below are left alone, they carry their own timing.
+echo "$(date +%T) ${2:-DEBUG} $1" >>/tmp/debug.log 2>&1
 
 if [ "$log_to_server" != "NONE" ]; then
 	if [ "$log_to_server" = "WARN" ] && [ "$2" = "WARN" ]; then
