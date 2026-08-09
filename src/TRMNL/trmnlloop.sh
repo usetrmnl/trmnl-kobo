@@ -94,6 +94,10 @@ SuspendFor() {
 
     ./scripts/log.sh "disabling wifi" "DEBUG"
     ./scripts/disable-wifi.sh >>/tmp/debug.log 2>&1
+    # Nothing reaches the server with the radio off and each attempt blocks for
+    # the connect timeout, so stop trying. The next iteration is a new process
+    # and picks the configured level back up.
+    export log_to_server="NONE"
 
     ./scripts/log.sh "Should sleep for ${total_seconds}" "DEBUG"
     sleep 5s
