@@ -7,6 +7,8 @@ FAILURE_COUNT_FILE=/tmp/trmnl_failures
 FIRST_RETRY_DELAY=60
 DEFAULT_REFRESH=900
 MAX_SUSPEND_ATTEMPTS=5
+# set by trmnl.sh, which owns the watcher that writes it
+STOP_FLAG=${TRMNL_STOP_FLAG:-/tmp/trmnl_stop}
 
 # Echo $1 if it is a positive integer, $2 otherwise
 SaneSeconds() {
@@ -99,6 +101,13 @@ SuspendFor() {
     deadline=$(($(date +%s) + total_seconds))
     attempt=0
     while :; do
+        # Serving out the sleep must not outrank the stop button, or a press
+        # would not be noticed until the whole refresh had been slept away
+        if [ -e "$STOP_FLAG" ]; then
+            ./scripts/log.sh "Stop requested, ending the sleep early" "DEBUG"
+            break
+        fi
+
         remaining=$((deadline - $(date +%s)))
         # close enough, another suspend would cost more than it saves
         [ $remaining -le 10 ] && break
@@ -108,9 +117,16 @@ SuspendFor() {
             ./scripts/log.sh "still ${remaining}s short after ${MAX_SUSPEND_ATTEMPTS} suspends, carrying on" "WARN"
             break
         fi
-        [ $attempt -gt 1 ] && ./scripts/log.sh "woken ${remaining}s early, suspending again" "WARN"
 
         SuspendOnce $remaining
+
+        # Coming back early is usually someone pressing power to look at the
+        # screen, so stay up long enough for them to press home, otherwise we
+        # would drop back to sleep before the button could be used at all
+        if [ $((deadline - $(date +%s))) -gt 10 ]; then
+            ./scripts/log.sh "woken early, staying up briefly in case you want to stop" "WARN"
+            sleep 5s
+        fi
     done
 }
 

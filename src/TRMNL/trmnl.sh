@@ -377,6 +377,17 @@ ko_do_dns
 # ensure hardware clock and system time are in sync
 hwclock -w -u
 
+# restore-nickel.sh runs as a child and has to undo what we changed on the way in
+export ORIG_FB_BPP ORIG_FB_ROTA ORIG_CPUFREQ_GOV CPUFREQ_SYSFS_PATH
+
+# The home button is the way out of the loop, without the hold-power reboot. The
+# watcher holds the input device open for the whole run, because a press is
+# dropped by the kernel if nothing has it open, and we are asleep most of the time.
+export TRMNL_STOP_FLAG=/tmp/trmnl_stop
+rm -f "${TRMNL_STOP_FLAG}"
+./scripts/watch-stop-button.sh "${TRMNL_STOP_FLAG}" >>/tmp/debug.log 2>&1 &
+
+stopped_by_button="false"
 while true; do
     count=$((count + 1))
     ./scripts/log.sh "$(date +%T) >> Loop ${count}" "DEBUG"
@@ -384,11 +395,19 @@ while true; do
 
     # logging everything block the suspend
     ./trmnlloop.sh
+    if [ -e "${TRMNL_STOP_FLAG}" ]; then
+        ./scripts/log.sh "Home button pressed, stopping after $count iterations." "DEBUG"
+        stopped_by_button="true"
+        break
+    fi
     if [ $count -eq $trmnl_loop_iteration_stop ] && [ $trmnl_loop_iteration_stop -ne 0 ]; then
         ./scripts/log.sh "Stopping script after $count iterations." "DEBUG"
         break
     fi
 done
+
+pkill -f watch_key.lua
+rm -f "${TRMNL_STOP_FLAG}"
 
 # Wipe the clones on exit
 rm -f "/tmp/trmnl.sh"
@@ -398,6 +417,13 @@ if [ -e /tmp/debug.log ]; then
     mv -f /tmp/debug.log.new /tmp/debug.log
 fi
 cp /tmp/debug.log debug.log
+
+# Stopping with the button is meant to avoid the reboot, so hand the device back
+# to nickel instead. Every other way out still reboots, as it always did.
+if [ "${stopped_by_button}" = "true" ]; then
+    ./scripts/restore-nickel.sh && exit 0
+    ./scripts/log.sh "Could not restore nickel, rebooting instead" "WARN"
+fi
 
 reboot
 exit 0
