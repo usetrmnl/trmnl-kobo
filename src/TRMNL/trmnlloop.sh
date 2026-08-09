@@ -6,6 +6,7 @@ LAST_REFRESH_FILE=/tmp/trmnl_last_refresh
 FAILURE_COUNT_FILE=/tmp/trmnl_failures
 FIRST_RETRY_DELAY=60
 DEFAULT_REFRESH=900
+MAX_SUSPEND_ATTEMPTS=5
 
 # Echo $1 if it is a positive integer, $2 otherwise
 SaneSeconds() {
@@ -15,19 +16,9 @@ SaneSeconds() {
     esac
 }
 
-# Shut the wifi down and suspend to memory for $1 seconds
-SuspendFor() {
+# One suspend attempt, for $1 seconds
+SuspendOnce() {
     suspend_seconds=$1
-
-    # A RestoreWifi still in its wpa wait would otherwise thaw after the suspend
-    # and tear down the wifi the next iteration just brought up
-    pkill -f restore-wifi-async.sh
-
-    ./scripts/log.sh "disabling wifi" "DEBUG"
-    ./scripts/disable-wifi.sh >>/tmp/debug.log 2>&1
-
-    ./scripts/log.sh "Should sleep for ${suspend_seconds}" "DEBUG"
-    sleep 5s
 
     ./scripts/log.sh "Enable suspend state" "DEBUG"
     echo 1 >/sys/power/state-extended >>/tmp/debug.log 2>&1
@@ -85,6 +76,42 @@ SuspendFor() {
             ./scripts/log.sh "Disable suspend state failed" "WARN"
         fi
     fi
+}
+
+# Shut the wifi down and stay suspended for $1 seconds. A suspend can come back
+# early, from a stray wakeup source rather than our alarm, and simply carrying on
+# would spend a whole wifi-and-fetch iteration well before the refresh is due, so
+# serve out the remaining time instead. Bounded, so something waking us
+# constantly cannot trap us here.
+SuspendFor() {
+    total_seconds=$1
+
+    # A RestoreWifi still in its wpa wait would otherwise thaw after the suspend
+    # and tear down the wifi the next iteration just brought up
+    pkill -f restore-wifi-async.sh
+
+    ./scripts/log.sh "disabling wifi" "DEBUG"
+    ./scripts/disable-wifi.sh >>/tmp/debug.log 2>&1
+
+    ./scripts/log.sh "Should sleep for ${total_seconds}" "DEBUG"
+    sleep 5s
+
+    deadline=$(($(date +%s) + total_seconds))
+    attempt=0
+    while :; do
+        remaining=$((deadline - $(date +%s)))
+        # close enough, another suspend would cost more than it saves
+        [ $remaining -le 10 ] && break
+
+        attempt=$((attempt + 1))
+        if [ $attempt -gt $MAX_SUSPEND_ATTEMPTS ]; then
+            ./scripts/log.sh "still ${remaining}s short after ${MAX_SUSPEND_ATTEMPTS} suspends, carrying on" "WARN"
+            break
+        fi
+        [ $attempt -gt 1 ] && ./scripts/log.sh "woken ${remaining}s early, suspending again" "WARN"
+
+        SuspendOnce $remaining
+    done
 }
 
 function ErrorOnCurl(){
