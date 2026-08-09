@@ -83,10 +83,10 @@ function ErrorOnCurl(){
         return
     fi
 
-    ./bin/fbink/fbdepth -r 0
-    ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f > /dev/null 2>&1
-    ./bin/fbink/fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)"  > /dev/null 2>&1
-    ./bin/fbink/fbdepth -r -1
+    ./bin/fbink/fbdepth -r 0 >>/tmp/debug.log 2>&1
+    ./bin/fbink/fbink -q -g file=./bin/error.png,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f >>/tmp/debug.log 2>&1
+    ./bin/fbink/fbink -m -y 5 "Retrieve TRMNL Display info failed ($curl_status)" >>/tmp/debug.log 2>&1
+    ./bin/fbink/fbdepth -r -1 >>/tmp/debug.log 2>&1
 
     failures=$(cat "$FAILURE_COUNT_FILE" 2>/dev/null)
     failures=$(($(SaneSeconds "$failures" 0) + 1))
@@ -188,12 +188,19 @@ else
         # With png image is already in portrait, no need to rotate, with bmp/legacy, rotation is needed, it here that we should support reverse orientation
         if [ "$trmnl_image_format" = "bmp" ]; then
             # Rotation -r 0 break BMP rendering, rotate it 180 more to go from portrait to landscape inverted
-            ./bin/fbink/fbdepth -r 2
+            ./bin/fbink/fbdepth -r 2 >>/tmp/debug.log 2>&1
         fi
-        ./bin/fbink/fbink -g file=/tmp/trmnl.$trmnl_image_format,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f
+        ./bin/fbink/fbink -g file=/tmp/trmnl.$trmnl_image_format,valign=CENTER,halign=CENTER,h=-2,w=0 -c -f >>/tmp/debug.log 2>&1
+        fbink_status=$?
+        image_bytes=$(wc -c < /tmp/trmnl.$trmnl_image_format 2>/dev/null)
+        if [ $fbink_status -eq 0 ]; then
+            ./scripts/log.sh "Displayed ${trmnl_image_format} image of ${image_bytes} bytes" "DEBUG"
+        else
+            ./scripts/log.sh "fbink failed on ${trmnl_image_format} image of ${image_bytes} bytes (${fbink_status})" "WARN"
+        fi
 
         # rotate back to portrait mode
-        ./bin/fbink/fbdepth -r -1
+        ./bin/fbink/fbdepth -r -1 >>/tmp/debug.log 2>&1
 
         refresh_rate=$(SaneSeconds "$(jq -r '.refresh_rate' /tmp/trmnl.json)" $DEFAULT_REFRESH)
         echo "$refresh_rate" >"$LAST_REFRESH_FILE"
