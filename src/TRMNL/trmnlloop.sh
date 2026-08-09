@@ -64,6 +64,8 @@ esac
 ./scripts/log.sh "Battery capacity: ${batteryCapacity}% - Status: ${batteryStatus}" "DEBUG"
 
 # get signal quality
+# (exported so logToServer.sh, which runs as a grandchild, can report it too)
+export rssi
 rssi=$(./scripts/getrssi.sh)
 
 curl "${trmnl_apiurl}/display" -L \
