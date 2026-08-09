@@ -228,10 +228,15 @@ fi
 
 # Make sure we have a sane-ish INTERFACE env var set...
 if [ -z "${INTERFACE}" ]; then
-    # That's what we used to hardcode anyway
-    INTERFACE="eth0"
+    # Ask the kernel instead of guessing: it is eth0 on the older Kobos but wlan0
+    # on others, and every wifi script here silently operates on a device that
+    # does not exist if we get it wrong. Only lists drivers already loaded, so
+    # keep eth0 as the last resort.
+    INTERFACE=$(awk 'NR > 2 { sub(":", "", $1); print $1; exit }' /proc/net/wireless 2>/dev/null)
+    INTERFACE="${INTERFACE:-eth0}"
     export INTERFACE
 fi
+echo "Wifi interface in use: $INTERFACE" >>/tmp/debug.log 2>&1
 
 # We'll enforce UR in ko_do_fbdepth, so make sure further FBInk usage (USBMS)
 # will also enforce UR... (Only actually meaningful on sunxi).
