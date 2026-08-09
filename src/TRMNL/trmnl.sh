@@ -406,6 +406,10 @@ while true; do
     fi
 done
 
+# The radio went down with the last suspend, so server logging from here on
+# would only block on connect timeouts
+export log_to_server="NONE"
+
 pkill -f watch_key.lua
 rm -f "${TRMNL_STOP_FLAG}"
 
