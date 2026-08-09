@@ -9,6 +9,7 @@ jq -nc --arg msg "$1" --arg ts "$(date +%s)" \
 # -s -o /dev/null: this runs once per log line, the progress meter and the response
 # body were going straight to the console
 curl "${trmnl_apiurl}/log" -L -s -o /dev/null \
+	 --fail --connect-timeout 15 --max-time 30 \
 	 -H "ID: $trmnl_id" \
 	 -H "Access-Token: $trmnl_token" \
 	 -H "Content-Type: application/json" \
@@ -17,3 +18,7 @@ curl "${trmnl_apiurl}/log" -L -s -o /dev/null \
 	 -H "FW-Version: ${trmnl_firmware_version}" \
 	 --request POST \
 	 --data @-
+status=$?
+if [ $status -ne 0 ]; then # straight to the log, log.sh would recurse back here
+	echo "[$(date)] logToServer.sh: POST failed ($status)" >>/tmp/debug.log
+fi
