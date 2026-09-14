@@ -119,7 +119,7 @@ case "${POWER_TOGGLE}" in
                 insmod "${KMOD_PATH}/sdio_wifi_pwr.ko"
             else
                 # Poke the kernel via ioctl on platforms without the dedicated power module...
-                ./luajit frontend/device/kobo/ntx_io.lua 208 1
+                ./bin/luajit lua/ntx_io.lua 208 1
             fi
         fi
         ;;
