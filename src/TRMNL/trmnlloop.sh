@@ -253,6 +253,15 @@ else
     if [ $curl_status -ne 0 ]; then
         ErrorOnCurl
     else
+        # This panel has no hardware rotation of its own; a server intentionally
+        # composing in the other orientation (e.g. a landscape dashboard design
+        # on a portrait-only panel) needs the raster itself turned, not just
+        # scaled to fit, or it displays as a small, sideways inset.
+        if [ "$trmnl_image_rotate" -ne 0 ]; then
+            convert /tmp/trmnl.$trmnl_image_format -rotate "$trmnl_image_rotate" /tmp/trmnl.$trmnl_image_format >>/tmp/debug.log 2>&1
+            ./scripts/log.sh "Rotated image ${trmnl_image_rotate} degrees (convert exit $?)" "DEBUG"
+        fi
+
         # With png image is already in portrait, no need to rotate, with bmp/legacy, rotation is needed, it here that we should support reverse orientation
         if [ "$trmnl_image_format" = "bmp" ]; then
             # Rotation -r 0 break BMP rendering, rotate it 180 more to go from portrait to landscape inverted
