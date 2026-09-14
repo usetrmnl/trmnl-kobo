@@ -64,12 +64,18 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - **TrmnlId**: Device Id/Mac address
   - **TrmnlToken**: Device token/API key
   - **TrmnlApiUrl**: Change this if your Bringing Your Own Server (BYOS)
+  - **AppendApiPath**: Defaults to `"true"`, which appends `/api` to **TrmnlApiUrl** when it does not already end with it (any trailing slash is dropped first). Leaving `/api` off a BYOS url is an easy mistake to make. Set to `"false"` if your server really does serve the API from the root.
+  - **LogToServer**: How much of the log to POST to your server's `/log` endpoint. Case-sensitive, and any unrecognised value (including omitting the setting, or a typo such as `"debug"`) silently sends nothing.
+    - `"NONE"`: send nothing. This is the effective default.
+    - `"WARN"`: send only the warnings, such as failing to connect to the wifi or a failed suspend.
+    - `"DEBUG"`: send every log line. That is one HTTP request per line, a couple of dozen per refresh, each holding the wifi up a little longer, so prefer it for troubleshooting over everyday use.
   - **LoopMaxIteration**: Set to 0 to run indifinitely (for initial setup/troubeleshooting, pick a small number, so that the KOBO automatically restart)
-  - **ConnectedGracePeriod**: If your KOBO regularly shows connection issue, increase this (delay in seconds after requesting to connect to the wifi, to request a TRMNL display information and image).
+  - **ConnectedGracePeriod**: Extra seconds to wait for the wifi to obtain an IP, on top of the 8s allowed by default. The wait ends as soon as an IP shows up, so raising this only matters if your KOBO regularly shows connection issues.
   - **ImageFormat**: bmp to behave like TRMNL OG, png, if you configured your device to something else (Kobo Libra, Kindle PW 7th gen for Clara HD).
     - Note: DPI might be too big, below Kindle PW 7th gen for Clara HD: 
     - ![Capture](./doc/img/nottrmnlogsupport.png)
     - Note: If using TERMINUS and PNG media/type, please [see guide to fix orientation](https://github.com/usetrmnl/trmnl-kobo/issues/17#issuecomment-3237420484), thanks [z0rzi](https://github.com/z0rzi)
+  - **ImageRotate**: Degrees to rotate the downloaded image before display: `0` (default), `90`, `180` or `270`. This panel has no hardware rotation of its own, so if your server intentionally composes in the other orientation (e.g. a landscape-designed dashboard on a portrait-only panel like Clara HD) and you don’t want Tesserae/Terminus reflowing the design to portrait, rotate the raster here instead. Requires `convert` (ImageMagick), bundled by Kobostuff.
   - **IgnoreCurlErrors**: Set to `true` to ignore errors from `curl` commands during the TRMNL loop and retry in the next iteration. This will continue showing outdated screen rather than the error screen. Default is `false`. This is helpful for dodgy network connections.
   - **WpaNetworkId**: Specifies the WPA network identifier to use. Default is `-1`, which means no specific network ID is set.
     - You can get the id by ssh'ing into Kobo and running `wpa_cli list_networks`, using ID of the network you want. 
@@ -78,10 +84,13 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
     "TrmnlId": "your TRMNL Mac Address",
     "TrmnlToken": "your TRMNL API Key",
     "TrmnlApiUrl": "https://usetrmnl.com/api",
+    "AppendApiPath": "true",
     "DebugToScreen": 0,
+    "LogToServer": "NONE",
     "LoopMaxIteration": 0,
     "ConnectedGracePeriod": 0,
-    "ImageFormat": "bmp" 
+    "ImageFormat": "bmp",
+    "ImageRotate": 0
 }
 ````
 
@@ -89,14 +98,16 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
   - (Located in src/nm/TRMNL.ini in this repo)
 - TRMNL app can be started using NickelMenu
    - ![Menu](./doc/img/menu.png) 
+- To exit the TRMNL loop, press the **home button**. The loop finishes its current cycle, then hands the Kobo back to its own UI without rebooting. On a device with no home button, or if it cannot be read, the loop logs a warning at startup and the method below still works. Note that the wifi is powered down on the way out and Kobo does not always notice, so you may have to toggle wifi off and on once in the Kobo settings.
 - To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
 
 
 ## FAQ
 - How to get out of TRMNL loop ?
-    - To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
+    - To exit the TRMNL loop, press the **home button**. The loop finishes its current cycle, then hands the Kobo back to its own UI without rebooting. On a device with no home button, or if it cannot be read, the loop logs a warning at startup and the method below still works. Note that the wifi is powered down on the way out and Kobo does not always notice, so you may have to toggle wifi off and on once in the Kobo settings.
+- To exit your Kobo when running the TRMNL loop, when powered off (sleeping between cycle), power it on (and release power button), and then hold the power button down until the power light blinks rapidly (or blue on mini). When the power light stops blinking, or lights up blue and glows solid, release the power button.
 - Why do sometimes I see a connection issue when KOBO's waking up ?
-  - If your wifi connection is bad, it may takes more time than the alloted delay to connect to the Wifi, if this is the case, it can be fixed using ```ConnectedGracePeriod``` setting in config.json to increase the time to connect to the wifi.
+  - If your wifi connection is bad, it may take more time to connect than the 8s allowed by default, if this is the case, it can be fixed using ```ConnectedGracePeriod``` setting in config.json to increase the time to connect to the wifi.
 
 ## Digging into sources
 
