@@ -27,7 +27,11 @@ sleep $trmnl_loop_connected_grace_period
 
 
 # Check if the battery directory exists
-if [ -d /sys/class/power_supply/mc13892_bat ]; then
+if [ -d /sys/class/power_supply/bd71827_bat ]; then
+  # Set variables from the third possible path
+  batteryCapacity=$(cat /sys/class/power_supply/bd71827_bat/capacity)
+  batteryStatus=$(cat /sys/class/power_supply/bd71827_bat/status)
+elif [ -d /sys/class/power_supply/mc13892_bat ]; then
   # Set variables from the second possible path
   batteryCapacity=$(cat /sys/class/power_supply/mc13892_bat/capacity)
   batteryStatus=$(cat /sys/class/power_supply/mc13892_bat/status)
