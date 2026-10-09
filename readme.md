@@ -3,7 +3,7 @@ This repository contains the implementation and a guide to make your kobo acts a
 
 **This is a work in progress**
 
-" *TRMNL is an e-ink display that connects with popular products and renders their most useful information. We believe this black & white, focused, hands-off approach is the best way to stay informed without getting distracted [TRMNL website](https://usetrmnl.com/).* "
+" *TRMNL is an e-ink display that connects with popular products and renders their most useful information. We believe this black & white, focused, hands-off approach is the best way to stay informed without getting distracted [TRMNL website](https://trmnl.com/).* "
 
 ![Capture](./doc/img/capture.jpg)
 
@@ -48,7 +48,7 @@ This project wouldn’t be possible without the incredible work of the open-sour
 ## Prerequisites
 
 - Kobo device connected to wifi
-- If you want to benefit to the awesome TRMNL ecosystem you will need a TRMNL API key (physical device or [BYOD license](https://shop.usetrmnl.com/products/byod)), or point to your own TRMNL server [BYOS](https://docs.usetrmnl.com/go/diy/byos)
+- If you want to benefit to the awesome TRMNL ecosystem you will need a TRMNL API key (physical device or [BYOD license](https://shop.trmnl.com/products/byod)), or point to your own TRMNL server [BYOS](https://docs.trmnl.com/go/diy/byos)
 
 ## Installation
 Here are the steps to get the TRMNL app working on your Kobo (show hidden folder in your computer if you don't see folder starting with a dot)
@@ -77,7 +77,7 @@ Here are the steps to get the TRMNL app working on your Kobo (show hidden folder
 {
     "TrmnlId": "your TRMNL Mac Address",
     "TrmnlToken": "your TRMNL API Key",
-    "TrmnlApiUrl": "https://usetrmnl.com/api",
+    "TrmnlApiUrl": "https://trmnl.app/api",
     "DebugToScreen": 0,
     "LoopMaxIteration": 0,
     "ConnectedGracePeriod": 0,
