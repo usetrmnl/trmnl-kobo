@@ -9,6 +9,7 @@ This repository contains the implementation and a guide to make your kobo acts a
 
 ### Reported working on
 - Kobo Mini (x2)
+- Kobo Glo HD (x1)
 - Kobo Clara HD (x3)
 - Kobo Clara 2E 
 - Kobo Aura Second Edition - (Device without activity Led)
