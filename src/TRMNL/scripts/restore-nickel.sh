@@ -22,6 +22,10 @@ if [ -n "${ORIG_CPUFREQ_GOV}" ] && [ -n "${CPUFREQ_SYSFS_PATH}" ]; then
     echo "${ORIG_CPUFREQ_GOV}" >"${CPUFREQ_SYSFS_PATH}/scaling_governor"
 fi
 
+while read -r light level; do
+    echo "$level" >"$light"
+done 2>/dev/null </tmp/trmnl-frontlight
+
 # Clear our own stuff out of the environment, USBMS gets wonky otherwise
 cd / || exit 1
 unset OLDPWD

@@ -261,6 +261,15 @@ if [ -z "${INTERFACE}" ]; then
 fi
 echo "Wifi interface in use: $INTERFACE" >>/tmp/debug.log 2>&1
 
+# Nickel leaves the frontlight on, which drains the battery under a dashboard (#19).
+# Keep each level so restore-nickel.sh can put it back. Older ntx_io models have no sysfs light.
+: >/tmp/trmnl-frontlight
+for light in /sys/class/backlight/*/brightness; do
+    [ -w "$light" ] || continue
+    echo "$light $(cat "$light")" >>/tmp/trmnl-frontlight
+    echo 0 >"$light"
+done
+
 # We'll enforce UR in ko_do_fbdepth, so make sure further FBInk usage (USBMS)
 # will also enforce UR... (Only actually meaningful on sunxi).
 if [ "${PLATFORM}" = "b300-ntx" ]; then
