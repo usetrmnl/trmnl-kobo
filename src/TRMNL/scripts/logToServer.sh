@@ -14,6 +14,7 @@ curl "${trmnl_apiurl}/log" -L -s -o /dev/null \
 	 -H "Access-Token: $trmnl_token" \
 	 -H "Content-Type: application/json" \
 	 -H "Percent-Charged: $batteryCapacity" \
+	 -H "Battery-Voltage: $trmnl_fake_voltage" \
 	 -H "RSSI: $rssi" \
 	 -H "FW-Version: ${trmnl_firmware_version}" \
 	 --request POST \

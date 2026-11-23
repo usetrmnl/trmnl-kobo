@@ -213,7 +213,13 @@ case "$batteryStatus" in
     *) batteryCharging=0 ;;
 esac
 
-./scripts/log.sh "Battery capacity: ${batteryCapacity}% - Status: ${batteryStatus}" "DEBUG"
+# Inker reads only Battery-Voltage, so keep sending a voltage guessed from the
+# percentage (3.00 V = 0 %, 4.195 V = 100 %) next to Percent-Charged
+export trmnl_fake_voltage
+voltage_mv=$(( batteryCapacity * 1195 / 100 + 3000 ))
+trmnl_fake_voltage="${voltage_mv%???}.${voltage_mv#?}"
+
+./scripts/log.sh "Battery capacity: ${batteryCapacity}% - Status: ${batteryStatus} - Voltage for API: ${trmnl_fake_voltage}V" "DEBUG"
 
 # get signal quality
 # (exported so logToServer.sh, which runs as a grandchild, can report it too)
@@ -226,6 +232,7 @@ curl "${trmnl_apiurl}/display" -L --fail --connect-timeout 15 --max-time 30 \
     -H "ID: $trmnl_id" \
     -H "Access-Token: $trmnl_token" \
     -H "Percent-Charged: $batteryCapacity" \
+    -H "Battery-Voltage: $trmnl_fake_voltage" \
     -H "Battery-Charging: $batteryCharging" \
     -H "RSSI: $rssi" \
     -H "FW-Version: ${trmnl_firmware_version}" \
