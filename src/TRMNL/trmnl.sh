@@ -52,6 +52,16 @@ export trmnl_firmware_version=$(cat version.txt)
 export trmnl_image_format=$(jq -r '.ImageFormat' config.json)
 echo "Image format to use: $trmnl_image_format"
 
+# Degrees to rotate the downloaded image before display (0/90/180/270), for a
+# panel with no hardware rotation whose server-side design is intentionally
+# authored in the other orientation (e.g. a landscape dashboard on a
+# portrait-only panel like Clara HD). 0 leaves the image untouched.
+export trmnl_image_rotate=$(jq -r '.ImageRotate' config.json 2>/dev/null)
+case "$trmnl_image_rotate" in
+    90 | 180 | 270) ;;
+    *) trmnl_image_rotate=0 ;;
+esac
+
 # Compute our working directory in an extremely defensive manner
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)"
 # NOTE: We need to remember the *actual* TRMNL_DIR, not the relocalized version in /tmp...

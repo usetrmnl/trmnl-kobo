@@ -8,6 +8,7 @@
     "LoopMaxIteration": 0,
     "ConnectedGracePeriod": 0,
     "ImageFormat": "png",
+    "ImageRotate": 0,
     "IgnoreCurlErrors": "false",
     "WpaNetworkId": "-1"
 }
