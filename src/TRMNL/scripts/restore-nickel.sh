@@ -26,6 +26,7 @@ fi
 cd / || exit 1
 unset OLDPWD
 unset LC_ALL
+unset FBINK_FORCE_ROTA
 export LD_LIBRARY_PATH="/usr/local/Kobo"
 
 if [ -e "/etc/init.d/on-animator.sh" ]; then
