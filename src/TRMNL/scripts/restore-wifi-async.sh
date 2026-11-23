@@ -12,7 +12,7 @@ RestoreWifi() {
         # If wpa_supplicant hasn't connected within 15 seconds, assume it never will, and tear down Wi-Fi
         if [ ${wpac_timeout} -ge 60 ]; then
             echo "[$(date)] restore-wifi-async.sh: Failed to connect to preferred AP!"
-            ./disable-wifi.sh
+            ./scripts/disable-wifi.sh
             return 1
         fi
         usleep 250000

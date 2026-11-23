@@ -10,6 +10,19 @@ export trmnl_token="$(jq -r '.TrmnlToken' config.json)"
 # Change if BYOS, no trailing slash
 export trmnl_apiurl="$(jq -r '.TrmnlApiUrl' config.json)"
 
+# Leaving /api off a BYOS url is a common mistake, so append it unless told not
+# to. jq -r renders "false" and false alike, and null when the key is absent.
+if [ "$(jq -r '.AppendApiPath' config.json 2>/dev/null)" != "false" ]; then
+    while [ "${trmnl_apiurl%/}" != "$trmnl_apiurl" ]; do # also catches ".../api/"
+        trmnl_apiurl="${trmnl_apiurl%/}"
+    done
+    case "$trmnl_apiurl" in
+        */api) ;;
+        *) trmnl_apiurl="${trmnl_apiurl}/api" ;;
+    esac
+fi
+echo "Api url in use: $trmnl_apiurl" >>/tmp/debug.log 2>&1
+
 # Do not log to screen if 0, otherwise log to screen too
 export debug_to_screen=$(jq -r '.DebugToScreen' config.json)
 
@@ -228,10 +241,15 @@ fi
 
 # Make sure we have a sane-ish INTERFACE env var set...
 if [ -z "${INTERFACE}" ]; then
-    # That's what we used to hardcode anyway
-    INTERFACE="eth0"
+    # Ask the kernel instead of guessing: it is eth0 on the older Kobos but wlan0
+    # on others, and every wifi script here silently operates on a device that
+    # does not exist if we get it wrong. Only lists drivers already loaded, so
+    # keep eth0 as the last resort.
+    INTERFACE=$(awk 'NR > 2 { sub(":", "", $1); print $1; exit }' /proc/net/wireless 2>/dev/null)
+    INTERFACE="${INTERFACE:-eth0}"
     export INTERFACE
 fi
+echo "Wifi interface in use: $INTERFACE" >>/tmp/debug.log 2>&1
 
 # We'll enforce UR in ko_do_fbdepth, so make sure further FBInk usage (USBMS)
 # will also enforce UR... (Only actually meaningful on sunxi).
@@ -359,6 +377,17 @@ ko_do_dns
 # ensure hardware clock and system time are in sync
 hwclock -w -u
 
+# restore-nickel.sh runs as a child and has to undo what we changed on the way in
+export ORIG_FB_BPP ORIG_FB_ROTA ORIG_CPUFREQ_GOV CPUFREQ_SYSFS_PATH
+
+# The home button is the way out of the loop, without the hold-power reboot. The
+# watcher holds the input device open for the whole run, because a press is
+# dropped by the kernel if nothing has it open, and we are asleep most of the time.
+export TRMNL_STOP_FLAG=/tmp/trmnl_stop
+rm -f "${TRMNL_STOP_FLAG}"
+./scripts/watch-stop-button.sh "${TRMNL_STOP_FLAG}" >>/tmp/debug.log 2>&1 &
+
+stopped_by_button="false"
 while true; do
     count=$((count + 1))
     ./scripts/log.sh "$(date +%T) >> Loop ${count}" "DEBUG"
@@ -366,11 +395,23 @@ while true; do
 
     # logging everything block the suspend
     ./trmnlloop.sh
+    if [ -e "${TRMNL_STOP_FLAG}" ]; then
+        ./scripts/log.sh "Home button pressed, stopping after $count iterations." "DEBUG"
+        stopped_by_button="true"
+        break
+    fi
     if [ $count -eq $trmnl_loop_iteration_stop ] && [ $trmnl_loop_iteration_stop -ne 0 ]; then
         ./scripts/log.sh "Stopping script after $count iterations." "DEBUG"
         break
     fi
 done
+
+# The radio went down with the last suspend, so server logging from here on
+# would only block on connect timeouts
+export log_to_server="NONE"
+
+pkill -f watch_key.lua
+rm -f "${TRMNL_STOP_FLAG}"
 
 # Wipe the clones on exit
 rm -f "/tmp/trmnl.sh"
@@ -380,6 +421,13 @@ if [ -e /tmp/debug.log ]; then
     mv -f /tmp/debug.log.new /tmp/debug.log
 fi
 cp /tmp/debug.log debug.log
+
+# Stopping with the button is meant to avoid the reboot, so hand the device back
+# to nickel instead. Every other way out still reboots, as it always did.
+if [ "${stopped_by_button}" = "true" ]; then
+    ./scripts/restore-nickel.sh && exit 0
+    ./scripts/log.sh "Could not restore nickel, rebooting instead" "WARN"
+fi
 
 reboot
 exit 0

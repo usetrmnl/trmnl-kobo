@@ -49,7 +49,7 @@ for fd in /proc/"$$"/fd/*; do
     fi
 done
 
-./release-ip.sh
+./scripts/release-ip.sh
 
 # NOTE: Prefer dhcpcd over udhcpc if available. That's what Nickel uses,
 #       and udhcpc appears to trip some insanely wonky corner cases on current FW (#6421)
