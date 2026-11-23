@@ -173,7 +173,7 @@ function ErrorOnCurl(){
 # restore-wifi-async.sh connects in the background: wait for the IP instead of a
 # fixed sleep, so the radio is powered back down sooner. ConnectedGracePeriod
 # stretches the budget for slow connections.
-# NOTE: ErrorOnCurl leaves the wifi up, so after a failed iteration this returns
+# NOTE: with IgnoreCurlErrors, a failed iteration leaves the wifi up, so this returns
 #       at once on the previous lease, which release-ip.sh is about to drop. That
 #       curl likely fails too, and the iteration after it connects normally.
 grace=$trmnl_loop_connected_grace_period
