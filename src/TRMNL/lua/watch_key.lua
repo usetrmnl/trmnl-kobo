@@ -34,6 +34,7 @@ local min_hold_ms = tonumber(arg[4]) or 0
 local EV_KEY = 1
 local KEY_DOWN = 1
 local KEY_UP = 0
+local KEY_REPEAT = 2
 
 local fd = C.open(device, bor(C.O_RDONLY, C.O_CLOEXEC))
 assert(fd ~= -1, "cannot open " .. device)
@@ -79,7 +80,10 @@ while true do
         end
         -- Wait out the release to measure the hold; a short tap (a wake) is
         -- silently ignored and we go back to watching for the next press.
-        local up_value, released_at = next_key_event()
+        local up_value, released_at
+        repeat -- auto-repeat events (value 2) arrive while the key is held
+            up_value, released_at = next_key_event()
+        until up_value ~= KEY_REPEAT
         if up_value == nil then
             break
         end
